@@ -128,11 +128,13 @@ function KaraokePage() {
         handlePlayPause();
       }
       if (e.code === "ArrowRight") {
+        if (document.activeElement?.tagName === "INPUT") return;
         const video = videoRef.current;
         if (!video) return;
         video.currentTime += 5;
       }
       if (e.code === "ArrowLeft") {
+        if (document.activeElement?.tagName === "INPUT") return;
         const video = videoRef.current;
         if (!video) return;
         video.currentTime -= 5;
