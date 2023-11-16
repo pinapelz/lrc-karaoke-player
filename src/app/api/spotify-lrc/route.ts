@@ -39,6 +39,7 @@ function convertLinesToLrc(lines: Line[] | undefined) {
     return lrc;
 }
 
+export const runtime = 'edge';
 export async function GET(request: NextRequest) {
  const searchParams = request.nextUrl.searchParams
  const q = searchParams.get('q');
