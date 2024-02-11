@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import KaraokePlayer from "./components/KaraokePlayer";
+import LRCPlayer from "./components/LRCPlayer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
@@ -267,20 +267,6 @@ function KaraokePage() {
     setScrubValue(parseFloat(event.target.value));
   };
 
-  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const volume = Number(event.target.value) / 100;
-    const video = videoRef.current;
-    const audio = supplementAudioRef.current;
-    if (!video || !audio) return;
-
-    if (balance < 0) {
-      video.volume = volume * (1 + balance);
-      audio.volume = volume;
-    } else {
-      video.volume = volume;
-      audio.volume = volume * (1 - balance);
-    }
-  };
 
   const handleVideoEnded = () => {
     setIsPlaying(false);
@@ -349,7 +335,7 @@ function KaraokePage() {
       <ToastContainer />
       {/*LRC viewer*/}
       <div style={{ display: "flex", width: "100%", height: "100vh" }}>
-        <KaraokePlayer
+        <LRCPlayer
           lrc={lrcContent}
           currentMillisecond={currentMillisecond}
         />
@@ -422,50 +408,9 @@ function KaraokePage() {
                   min="0"
                   max="100"
                   value={scrubValue}
-                  style={{ flex: 1, height: "50px" }}
+                  style={{ flex: 1, height: "50px", width: "100%"}}
                   onInput={handleScrub}
                 />
-                <div
-                  style={{
-                    position: "relative",
-                    width: "50px",
-                    height: "50px",
-                  }}
-                >
-                  <button
-                    onClick={handleVolumeToggle}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      padding: "10px",
-                      border: "none",
-                      borderRadius: "5px",
-                      backgroundColor: "white",
-                      color: "black",
-                    }}
-                  >
-                    {!showVolume ? <FaVolumeMute /> : <FaVolumeUp />}
-                  </button>
-                  {showVolume && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "100%",
-                        transform:
-                          "translateX(-50%) translateY(-100%) rotate(-90deg)",
-                      }}
-                    >
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        defaultValue="100"
-                        style={{ height: "40px", width: "100px" }}
-                        onChange={handleVolumeChange}
-                      />
-                    </div>
-                  )}
-                </div>
               </div>
             </>
           ) : (
@@ -489,7 +434,6 @@ function KaraokePage() {
                 {statusText}
               </h1>
               {/* Show a placeholder while no video selected */}
-
               <p
                 style={{
                   fontSize: "30px",

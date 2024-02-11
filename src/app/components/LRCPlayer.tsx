@@ -1,6 +1,7 @@
 import React, { CSSProperties, useCallback } from 'react';
-import styled, { css } from 'styled-components';
 import { Lrc, LrcLine } from 'react-lrc';
+import styled from 'styled-components';
+import css from 'styled-components';
 
 const Line = styled.div<{ $active: boolean; $next: boolean }>`
     min-height: 10px;
@@ -17,12 +18,10 @@ const Line = styled.div<{ $active: boolean; $next: boolean }>`
     background-position: right bottom;
     transition: color 1s ease-out, background-position 1s ease-out;
 
-    ${({ $active }) => $active && css`
+    ${({ $active }: { $active: boolean }) => $active ? `
         color: black;
         font-weight: 700;
-        background-position: left bottom;
-        color: rgb(50, 50, 50);
-    `}
+    ` : ''}
 `;
 const lrcStyle: CSSProperties = {
   flex: 1,
@@ -30,12 +29,12 @@ const lrcStyle: CSSProperties = {
   overflow: 'hidden !important'
 };
 
-interface KaraokePlayerProps {
+interface LRCPlayerProps {
   currentMillisecond: number;
   lrc: string;
 }
 
-const KaraokePlayer: React.FC<KaraokePlayerProps> = ({ currentMillisecond, lrc }) => {
+const LRCPlayer: React.FC<LRCPlayerProps> = ({ currentMillisecond, lrc }) => {
   const lineRenderer = useCallback(
     ({ active, line: { content } }: { active: boolean; line: LrcLine }) => {
       const next = active && content === '';
@@ -55,4 +54,4 @@ const KaraokePlayer: React.FC<KaraokePlayerProps> = ({ currentMillisecond, lrc }
   );
 };
 
-export default KaraokePlayer;
+export default LRCPlayer;
