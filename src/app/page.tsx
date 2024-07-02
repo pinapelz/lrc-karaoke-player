@@ -444,7 +444,7 @@ function KaraokePage() {
                 Please select the video and lrc (lyrics) file <br />
                 (Drag and Drop them here, or use the menus below!)
                 <br />
-                <StyledLink href="/about>">About</StyledLink>
+                <StyledLink href="/about">About</StyledLink>
               </p>
             </div>
           )}
