@@ -1,7 +1,6 @@
 import React, { CSSProperties, useCallback } from 'react';
+import styled, { css } from 'styled-components';
 import { Lrc, LrcLine } from 'react-lrc';
-import styled from 'styled-components';
-import css from 'styled-components';
 
 const Line = styled.div<{ $active: boolean; $next: boolean }>`
     min-height: 10px;
@@ -16,12 +15,13 @@ const Line = styled.div<{ $active: boolean; $next: boolean }>`
     background: linear-gradient(to right, rgba(0,0,0,0) 50%, rgb(200, 190, 190) 50%);
     background-size: 200% 100%;
     background-position: right bottom;
-    transition: color 1s ease-out, background-position 1s ease-out;
 
-    ${({ $active }: { $active: boolean }) => $active ? `
+    ${({ $active }) => $active && css`
         color: black;
         font-weight: 700;
-    ` : ''}
+        background-position: left bottom;
+        color: rgb(50, 50, 50);
+    `}
 `;
 const lrcStyle: CSSProperties = {
   flex: 1,
@@ -29,12 +29,12 @@ const lrcStyle: CSSProperties = {
   overflow: 'hidden !important'
 };
 
-interface LRCPlayerProps {
+interface LrcPlayerProps {
   currentMillisecond: number;
   lrc: string;
 }
 
-const LRCPlayer: React.FC<LRCPlayerProps> = ({ currentMillisecond, lrc }) => {
+const LrcPlayer: React.FC<LrcPlayerProps> = ({ currentMillisecond, lrc }) => {
   const lineRenderer = useCallback(
     ({ active, line: { content } }: { active: boolean; line: LrcLine }) => {
       const next = active && content === '';
@@ -54,4 +54,4 @@ const LRCPlayer: React.FC<LRCPlayerProps> = ({ currentMillisecond, lrc }) => {
   );
 };
 
-export default LRCPlayer;
+export default LrcPlayer;
