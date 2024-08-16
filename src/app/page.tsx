@@ -467,12 +467,12 @@ function KaraokePage() {
                 htmlFor="videoUpload"
                 style={{ cursor: "pointer" }}
               >
-                Video
+                Media
               </FileInputLabel>
               <FileInput
                 id="videoUpload"
                 type="file"
-                accept="video/*"
+                accept="video/*,audio/*"
                 onChange={handleVideoFileChange}
               />
               <FileInputLabel htmlFor="srvUpload" style={{ cursor: "pointer" }}>
