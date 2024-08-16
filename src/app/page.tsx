@@ -520,7 +520,7 @@ function KaraokePage() {
                   id="numberInput"
                   value={offset}
                   onChange={(e) => setOffset(e.target.value)}
-                  step="100"
+                  step="25"
                 />
               </div>
               <div
