@@ -6,6 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { CaptionsRenderer } from "react-srv3";
+import { Button } from "react-bootstrap";
 
 // Srtyled components
 const Root = styled.div`
@@ -93,11 +94,11 @@ function KaraokePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const supplementAudioRef = useRef<HTMLAudioElement>(null);
   const [captionsText, setCaptionsText] = useState<string>("");
-  const [offset, setOffset] = useState<string>("0");
+  const [offset, setOffset] = useState<number>(0);
   const [dragOver, setDragOver] = useState<boolean>(false);
   const [statusText, setStatusText] = useState<string>("No video selected");
   const [balance, setBalance] = useState<number>(0);
-  const [supplementAudioOffset, setSupplementAudioOffset] = useState<string>("0");
+  const [supplementAudioOffset, setSupplementAudioOffset] = useState<number>(0);
 
   // Functions for handling file input changes
   const handleLrcFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,13 +151,28 @@ function KaraokePage() {
       setCurrentMillisecond(0);
       setScrubValue(0);
       setIsPlaying(false);
-      if (video) 
+      if (video)
         video.pause();
       toast.success("Supplemental Audio file loaded successfully", {
         autoClose: 2000,
       });
     }
   };
+
+  const handleOnClickDemoButton = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    event.preventDefault();
+    setOffset(-1550);
+    fetch("https://utfs.io/f/e2e18ea7-9841-437b-9ca3-5723355bd41a-rlck46.lrc")
+      .then(function (response) {
+        response.text().then(function (responseString) {
+          setLrcContent(responseString)
+        });
+      })
+    setVideoUrl("https://utfs.io/f/84f5dfa6-821d-407f-a16d-a685b09c11d9-7xx2h4.webm")
+    toast.success("Loading Demo: Mr.Raindrop - Amplified")
+    toast.success("Applied offset of -1550ms")
+
+  }
 
   // Side effects for keyboard shortcuts
   useEffect(() => {
@@ -188,7 +204,7 @@ function KaraokePage() {
     const video = videoRef.current;
     if (!video) return;
     const syncLrcWithVideo = () => {
-      setCurrentMillisecond(video.currentTime * 1000 + parseInt(offset)); // updates lrc position
+      setCurrentMillisecond(video.currentTime * 1000 + offset); // updates lrc position
       setScrubValue((video.currentTime / video.duration) * 100); // update playhead position
     };
     video.addEventListener("timeupdate", syncLrcWithVideo);
@@ -202,9 +218,9 @@ function KaraokePage() {
     const video = videoRef.current;
     const audio = supplementAudioRef.current;
     if (!video || !audio) return;
-  
+
     if (balance < 0) {
-      video.volume = (1 + balance); 
+      video.volume = (1 + balance);
     } else {
       video.volume = 1;
       audio.volume = (1 - balance);
@@ -215,9 +231,9 @@ function KaraokePage() {
     const video = videoRef.current;
     const audio = supplementAudioRef.current;
     if (!video || !audio) return;
-    if (supplementAudioOffset === "" || supplementAudioOffset == null) return;
-    audio.currentTime = video.currentTime + parseInt(supplementAudioOffset)/1000;
-  },[supplementAudioOffset]);
+    if (supplementAudioOffset === null || supplementAudioOffset == null) return;
+    audio.currentTime = video.currentTime + supplementAudioOffset / 1000;
+  }, [supplementAudioOffset]);
 
   // General video control functionality
 
@@ -258,11 +274,11 @@ function KaraokePage() {
     const time =
       (parseFloat(event.target.value) / 100) * videoRef.current!.duration;
     videoRef.current!.currentTime = time;
-    if (supplementAudioOffset === "" || supplementAudioOffset == null){
+    if (supplementAudioOffset === null || supplementAudioOffset == null) {
       supplementAudioRef.current!.currentTime = time;
     }
     else {
-      supplementAudioRef.current!.currentTime = time + parseInt(supplementAudioOffset)/1000;
+      supplementAudioRef.current!.currentTime = time + supplementAudioOffset / 1000;
     }
     setScrubValue(parseFloat(event.target.value));
   };
@@ -277,8 +293,8 @@ function KaraokePage() {
     const video = videoRef.current;
     const audio = supplementAudioRef.current;
     if (!video || !audio) return;
-    if (supplementAudioOffset === "" || supplementAudioOffset == null) return;
-    audio.currentTime = video.currentTime + parseInt(supplementAudioOffset)/1000;
+    if (supplementAudioOffset === null || supplementAudioOffset == null) return;
+    audio.currentTime = video.currentTime + supplementAudioOffset / 1000;
   }
 
   // Handling drag and drop files
@@ -408,7 +424,7 @@ function KaraokePage() {
                   min="0"
                   max="100"
                   value={scrubValue}
-                  style={{ flex: 1, height: "50px", width: "100%"}}
+                  style={{ flex: 1, height: "50px", width: "100%" }}
                   onInput={handleScrub}
                 />
               </div>
@@ -444,7 +460,8 @@ function KaraokePage() {
                 Please select the video and lrc (lyrics) file <br />
                 (Drag and Drop them here, or use the menus below!)
                 <br />
-                <StyledLink href="/about">About</StyledLink>
+                <StyledLink href="/about"> About </StyledLink>
+                <StyledLink href="" onClick={handleOnClickDemoButton}> Demo </StyledLink>
               </p>
             </div>
           )}
@@ -519,7 +536,7 @@ function KaraokePage() {
                   style={{ fontSize: "14px" }}
                   id="numberInput"
                   value={offset}
-                  onChange={(e) => setOffset(e.target.value)}
+                  onChange={(e) => setOffset(Number(e.target.value))}
                   step="25"
                 />
               </div>
@@ -536,7 +553,7 @@ function KaraokePage() {
                   style={{ fontSize: "14px" }}
                   id="numberInput"
                   value={supplementAudioOffset}
-                  onChange={(e) => setSupplementAudioOffset(e.target.value)}
+                  onChange={(e) => setSupplementAudioOffset(Number(e.target.value))}
                   step="25"
                 />
               </div>
