@@ -6,6 +6,8 @@ interface LineProps {
     $active: boolean;
     $next: boolean;
     $animate: boolean;
+    $lrcColor: string;
+    $fontColor: string;
 }
 
 const Line = styled.div<LineProps>`
@@ -16,13 +18,13 @@ const Line = styled.div<LineProps>`
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     text-align: center;
-    color: rgb(72, 72, 72);
+    color: ${({ $fontColor }) => $fontColor};
 
-    background: linear-gradient(
+    background: ${({ $lrcColor }) => `linear-gradient(
         to right,
         rgba(0, 0, 0, 0) 50%,
-        rgb(200, 190, 190) 50%
-    );
+        ${$lrcColor} 50%
+    )`};
     background-size: 200% 100%;
     background-position: right bottom;
 
@@ -53,23 +55,33 @@ interface LrcPlayerProps {
     currentMillisecond: number;
     lrc: string;
     animate: boolean;
+    lrcColor: string;
+    fontColor: string;
 }
 
 const LrcPlayer: React.FC<LrcPlayerProps> = ({
     currentMillisecond,
     lrc,
     animate,
+    lrcColor = "#C8BEBE",
+    fontColor = "rgb(72, 72, 72)",
 }) => {
     const lineRenderer = useCallback(
         ({ active, line: { content } }: { active: boolean; line: LrcLine }) => {
             const next = active && content === "";
             return (
-                <Line $active={active} $next={next} $animate={animate}>
+                <Line
+                    $active={active}
+                    $next={next}
+                    $animate={animate}
+                    $lrcColor={lrcColor}
+                    $fontColor={fontColor}
+                >
                     {content}
                 </Line>
             );
         },
-        [animate],
+        [animate, lrcColor, fontColor],
     );
 
     return (

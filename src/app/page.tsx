@@ -6,7 +6,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { CaptionsRenderer } from "react-srv3";
-import { Button } from "react-bootstrap";
 
 // Srtyled components
 const Root = styled.div`
@@ -99,8 +98,25 @@ function KaraokePage() {
     const [statusText, setStatusText] = useState<string>("No video selected");
     const [balance, setBalance] = useState<number>(0);
     const [animate, setAnimate] = useState<boolean>(true);
+    const [lrcColor, setLrcColor] = useState<string>("#C8BEBE");
+    const [fontColor, setFontColor] = useState<string>("#000000");
     const [supplementAudioOffset, setSupplementAudioOffset] =
         useState<number>(0);
+
+    useEffect(() => {
+        const savedLrcColor = localStorage.getItem("lrcColor");
+        const savedFontColor = localStorage.getItem("fontColor");
+        if (savedLrcColor) setLrcColor(savedLrcColor);
+        if (savedFontColor) setFontColor(savedFontColor);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("lrcColor", lrcColor);
+    }, [lrcColor]);
+
+    useEffect(() => {
+        localStorage.setItem("fontColor", fontColor);
+    }, [fontColor]);
 
     // Functions for handling file input changes
     const handleLrcFileChange = (
@@ -225,6 +241,7 @@ function KaraokePage() {
         };
     });
 
+    // Side effect for volume controls
     useEffect(() => {
         const video = videoRef.current;
         const audio = supplementAudioRef.current;
@@ -238,6 +255,7 @@ function KaraokePage() {
         }
     }, [balance]);
 
+    // Side effect for audio
     useEffect(() => {
         const video = videoRef.current;
         const audio = supplementAudioRef.current;
@@ -370,6 +388,8 @@ function KaraokePage() {
                     lrc={lrcContent}
                     currentMillisecond={currentMillisecond}
                     animate={animate}
+                    lrcColor={lrcColor}
+                    fontColor={fontColor}
                 />
 
                 {/* Ternary operation for if videoUrl has been set */}
@@ -616,25 +636,53 @@ function KaraokePage() {
                                     }
                                     step="25"
                                 />
+                                <label
+                                    style={{
+                                        fontSize: "14px",
+                                        fontFamily: "Arial",
+                                        userSelect: "none",
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={animate}
+                                        onChange={(e) =>
+                                            setAnimate(e.target.checked)
+                                        }
+                                        onSelect={(e) => e.preventDefault()}
+                                        style={{ marginRight: "8px" }}
+                                    />
+                                    Line Animation
+                                </label>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                    }}
+                                >
+                                    <input
+                                        type="color"
+                                        value={lrcColor}
+                                        onChange={(e) =>
+                                            setLrcColor(e.target.value)
+                                        }
+                                    />
+                                    <input
+                                        type="color"
+                                        value={fontColor}
+                                        onChange={(e) =>
+                                            setFontColor(e.target.value)
+                                        }
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            setLrcColor("#C8BEBE");
+                                            setFontColor("#000000");
+                                        }}
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
                             </div>
-                            <label
-                                style={{
-                                    fontSize: "14px",
-                                    fontFamily: "Arial",
-                                    userSelect: "none",
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={animate}
-                                    onChange={(e) =>
-                                        setAnimate(e.target.checked)
-                                    }
-                                    onSelect={(e) => e.preventDefault()}
-                                    style={{ marginRight: "8px" }}
-                                />
-                                Line Animation
-                            </label>
                         </FileInputContainer>
                     )}
                 </div>
