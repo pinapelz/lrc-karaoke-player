@@ -1,8 +1,14 @@
-import React, { CSSProperties, useCallback } from 'react';
-import styled, { css } from 'styled-components';
-import { Lrc, LrcLine } from 'react-lrc';
+import React, { CSSProperties, useCallback } from "react";
+import styled, { css } from "styled-components";
+import { Lrc, LrcLine } from "react-lrc";
 
-const Line = styled.div<{ $active: boolean; $next: boolean }>`
+interface LineProps {
+    $active: boolean;
+    $next: boolean;
+    $animate: boolean;
+}
+
+const Line = styled.div<LineProps>`
     min-height: 10px;
     padding: 14px 30px;
 
@@ -10,48 +16,71 @@ const Line = styled.div<{ $active: boolean; $next: boolean }>`
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     text-align: center;
-    color: rgb(72,72,72);
+    color: rgb(72, 72, 72);
 
-    background: linear-gradient(to right, rgba(0,0,0,0) 50%, rgb(200, 190, 190) 50%);
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0) 50%,
+        rgb(200, 190, 190) 50%
+    );
     background-size: 200% 100%;
     background-position: right bottom;
 
-    ${({ $active }) => $active && css`
-        color: black;
-        font-weight: 700;
-        background-position: left bottom;
-        color: rgb(50, 50, 50);
-    `}
+    ${({ $animate }) =>
+        $animate &&
+        css`
+            transition:
+                color 0.3s ease,
+                background-position 0.5s ease;
+        `}
+
+    ${({ $active }) =>
+        $active &&
+        css`
+            color: rgb(50, 50, 50);
+            font-weight: 700;
+            background-position: left bottom;
+        `}
 `;
+
 const lrcStyle: CSSProperties = {
-  flex: 1,
-  minHeight: 0,
-  overflow: 'hidden !important'
+    flex: 1,
+    minHeight: 0,
+    overflow: "hidden !important",
 };
 
 interface LrcPlayerProps {
-  currentMillisecond: number;
-  lrc: string;
+    currentMillisecond: number;
+    lrc: string;
+    animate: boolean;
 }
 
-const LrcPlayer: React.FC<LrcPlayerProps> = ({ currentMillisecond, lrc }) => {
-  const lineRenderer = useCallback(
-    ({ active, line: { content } }: { active: boolean; line: LrcLine }) => {
-      const next = active && content === '';
-      return <Line $active={active} $next={next}>{content}</Line>;
-    },
-    []
-  );
+const LrcPlayer: React.FC<LrcPlayerProps> = ({
+    currentMillisecond,
+    lrc,
+    animate,
+}) => {
+    const lineRenderer = useCallback(
+        ({ active, line: { content } }: { active: boolean; line: LrcLine }) => {
+            const next = active && content === "";
+            return (
+                <Line $active={active} $next={next} $animate={animate}>
+                    {content}
+                </Line>
+            );
+        },
+        [animate],
+    );
 
-  return (
-    <Lrc
-      lrc={lrc}
-      lineRenderer={lineRenderer}
-      currentMillisecond={currentMillisecond}
-      style={lrcStyle}
-      recoverAutoScrollInterval={0}
-    />
-  );
+    return (
+        <Lrc
+            lrc={lrc}
+            lineRenderer={lineRenderer}
+            currentMillisecond={currentMillisecond}
+            style={lrcStyle}
+            recoverAutoScrollInterval={0}
+        />
+    );
 };
 
 export default LrcPlayer;
