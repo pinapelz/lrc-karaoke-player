@@ -4,10 +4,11 @@ import styled from "styled-components";
 import LRCPlayer from "./components/LRCPlayer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { FaPlay, FaPause } from "react-icons/fa";
 import { CaptionsRenderer } from "react-srv3";
+import { useSearchParams } from "next/navigation";
 
-// Srtyled components
+// Styled components
 const Root = styled.div`
     position: absolute;
     width: 100%;
@@ -75,9 +76,22 @@ const StyledLink = styled.a`
     font-size: 20px;
     font-family: Arial;
     text-decoration: none;
-    text-color: black;
+    color: black;
     &:hover {
         text-decoration: underline;
+    }
+`;
+
+const StyledButton = styled.button`
+    padding: 10px 15px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    &:hover,
+    &:focus {
+        background-color: #eaeaea;
+        outline: none;
     }
 `;
 
@@ -102,6 +116,9 @@ function KaraokePage() {
     const [fontColor, setFontColor] = useState<string>("#000000");
     const [supplementAudioOffset, setSupplementAudioOffset] =
         useState<number>(0);
+    const [base64Input, setBase64Input] = useState<string>("");
+
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const savedLrcColor = localStorage.getItem("lrcColor");
@@ -379,6 +396,95 @@ function KaraokePage() {
         }
     };
 
+    function processData(data: any) {
+        if (data.lrc) {
+            fetch(data.lrc)
+                .then((response) => response.text())
+                .then((text) => {
+                    setLrcContent(text);
+                    if (videoUrl) setShowFileInputs(false);
+                    toast.success("LRC file loaded successfully", {
+                        autoClose: 2000,
+                    });
+                })
+                .catch((error) => {
+                    toast.error("Failed to load LRC file", { autoClose: 2000 });
+                });
+        }
+        if (data.srv3) {
+            fetch(data.srv3)
+                .then((response) => response.text())
+                .then((text) => {
+                    setCaptionsText(text);
+                    toast.success("SRV file loaded successfully", {
+                        autoClose: 2000,
+                    });
+                })
+                .catch((error) => {
+                    toast.error("Failed to load SRV3 file", {
+                        autoClose: 2000,
+                    });
+                });
+        }
+        if (data.file1) {
+            setVideoUrl(data.file1);
+            setCurrentMillisecond(0);
+            setScrubValue(0);
+            setIsPlaying(false);
+            toast.success("Video file loaded successfully", {
+                autoClose: 2000,
+            });
+        }
+        if (data.file2) {
+            setSupplementAudioUrl(data.file2);
+            setCurrentMillisecond(0);
+            setScrubValue(0);
+            setIsPlaying(false);
+            toast.success("Supplemental Audio file loaded successfully", {
+                autoClose: 2000,
+            });
+        }
+        if (data.offset1) {
+            setOffset(Number(data.offset));
+        }
+        if (data.offset2) {
+            setOffset(Number(data.offset2));
+        }
+    }
+
+    // Handle base64 input from user
+    const handleKaraokeb64Code = () => {
+        try {
+            const decodedString = atob(base64Input);
+            console.log(decodedString);
+            const data = JSON.parse(decodedString);
+            processData(data);
+            toast.success("Data loaded successfully", { autoClose: 2000 });
+        } catch (e) {
+            toast.error("Invalid base64 or JSON data", { autoClose: 2000 });
+        }
+    };
+
+    // Check for query parameter
+    useEffect(() => {
+        const dataParam = searchParams.get("code");
+        if (dataParam) {
+            try {
+                const decodedString = atob(dataParam);
+                const data = JSON.parse(decodedString);
+                processData(data);
+                toast.success("Data loaded from query parameter", {
+                    autoClose: 2000,
+                });
+            } catch (e) {
+                toast.error("Invalid data in query parameter", {
+                    autoClose: 2000,
+                });
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
+
     return (
         <Root>
             <ToastContainer />
@@ -521,6 +627,23 @@ function KaraokePage() {
                                     Demo{" "}
                                 </StyledLink>
                             </p>
+                            <div style={{ marginTop: "20px", width: "80%" }}>
+                                <label htmlFor="base64Input">
+                                    or enter a PatchworkKaraoke code:
+                                </label>
+                                <input
+                                    id="base64Input"
+                                    type="text"
+                                    value={base64Input}
+                                    onChange={(e) =>
+                                        setBase64Input(e.target.value)
+                                    }
+                                    style={{ width: "100%", fontSize: "16px" }}
+                                />
+                                <StyledButton onClick={handleKaraokeb64Code}>
+                                    Load Data
+                                </StyledButton>
+                            </div>
                         </div>
                     )}
 
