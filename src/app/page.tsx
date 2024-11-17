@@ -82,17 +82,14 @@ const StyledLink = styled.a`
     }
 `;
 
-const StyledButton = styled.button`
-    padding: 10px 15px;
-    margin-top: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    &:hover,
-    &:focus {
-        background-color: #eaeaea;
-        outline: none;
-    }
+const LRCPlayerWrapper = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    background-color: #ffffff;
 `;
 
 function KaraokePage() {
@@ -490,13 +487,15 @@ function KaraokePage() {
             <ToastContainer />
             {/*LRC viewer*/}
             <div style={{ display: "flex", width: "100%", height: "100vh" }}>
-                <LRCPlayer
-                    lrc={lrcContent}
-                    currentMillisecond={currentMillisecond}
-                    animate={animate}
-                    lrcColor={lrcColor}
-                    fontColor={fontColor}
-                />
+                <LRCPlayerWrapper>
+                    <LRCPlayer
+                        lrc={lrcContent}
+                        currentMillisecond={currentMillisecond}
+                        animate={animate}
+                        lrcColor={lrcColor}
+                        fontColor={fontColor}
+                    />
+                </LRCPlayerWrapper>
 
                 {/* Ternary operation for if videoUrl has been set */}
                 <div
@@ -627,7 +626,7 @@ function KaraokePage() {
                                     Demo{" "}
                                 </StyledLink>
                             </p>
-                            <div style={{ marginTop: "20px", width: "80%" }}>
+                            <div>
                                 <label htmlFor="base64Input">
                                     or enter a PatchworkKaraoke code:
                                 </label>
@@ -640,9 +639,9 @@ function KaraokePage() {
                                     }
                                     style={{ width: "100%", fontSize: "16px" }}
                                 />
-                                <StyledButton onClick={handleKaraokeb64Code}>
+                                <button onClick={handleKaraokeb64Code}>
                                     Load Data
-                                </StyledButton>
+                                </button>
                             </div>
                         </div>
                     )}

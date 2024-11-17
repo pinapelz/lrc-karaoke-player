@@ -49,6 +49,8 @@ const lrcStyle: CSSProperties = {
     flex: 1,
     minHeight: 0,
     overflow: "hidden !important",
+    overflowY: "auto",
+    scrollBehavior: "smooth",
 };
 
 interface LrcPlayerProps {
