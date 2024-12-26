@@ -8,6 +8,6 @@ https://github.com/Patchwork-Archive/Patchwork-Karaoke/assets/21994085/5106bb53-
 
 # Build
 ```
-npm i
-npm run dev
+pnpm i
+pnpm run dev
 ```
