@@ -75,7 +75,7 @@ const lyrics = `[ti:CRUSH]
 
 const AboutPage: React.FC = () => {
     return (
-        <>
+        <div>
             <GlobalStyle />
             <Container>
                 <Title>About</Title>
@@ -224,7 +224,7 @@ const AboutPage: React.FC = () => {
                 </Video>
                 <BackLink href="/">Back to player</BackLink>
             </Container>
-        </>
+        </div>
     );
 };
 
