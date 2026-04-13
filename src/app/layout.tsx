@@ -1,4 +1,7 @@
-export const metadata = {
+import type { Metadata } from "next";
+import StyledComponentsRegistry from "./registry";
+
+export const metadata: Metadata = {
   title: "LRC-Karaoke Player",
   description:
     "A karaoke oriented media player with support for lyrics, subtitles, and offset adjustments!",
@@ -11,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
     </html>
   );
 }
