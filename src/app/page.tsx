@@ -683,7 +683,7 @@ function KaraokePage() {
         autoClose: 2000,
       });
     }
-    if (data.offset1) setOffset(Number(data.offset));
+    if (data.offset) setOffset(Number(data.offset));
     if (data.offset2) setSupplementAudioOffset(Number(data.offset2));
   }
 
