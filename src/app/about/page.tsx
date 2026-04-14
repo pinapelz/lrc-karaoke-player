@@ -222,7 +222,7 @@ const AboutPage: React.FC = () => {
                 <Video controls>
                     <source src="https://files.catbox.moe/ir6bs3.mp4" />
                 </Video>
-                <BackLink href="/">Back to player</BackLink>
+                <BackLink href="/player">Back to player</BackLink>
             </Container>
         </div>
     );
