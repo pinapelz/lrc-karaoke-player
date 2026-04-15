@@ -1,10 +1,20 @@
 "use client";
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import { FaPlay, FaMusic, FaBars, FaSearch, FaUserCircle } from "react-icons/fa";
+import { FaPlay, FaMusic, FaSearch, FaUserCircle } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
 
+interface KaraokeEntry {
+  title: string;
+  artist: string;
+  thumbnail: string;
+  has_srv: boolean;
+  has_instrumental: boolean;
+  code: string;
+}
+
+type KaraokeData = Record<string, KaraokeEntry[]>;
 
 const Root = styled.div`
   min-height: 100vh;
@@ -182,9 +192,12 @@ const CardGrid = styled.div`
   gap: 20px;
 `;
 
-const Card = styled.div`
+const Card = styled(Link)`
   cursor: pointer;
   border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover {
     transform: translateY(-2px);
@@ -204,6 +217,12 @@ const ThumbnailWrapper = styled.div`
   font-size: 36px;
   overflow: hidden;
   position: relative;
+`;
+
+const Thumbnail = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 const PlayOverlay = styled.div`
@@ -239,17 +258,34 @@ const PlayCircle = styled.div`
   }
 `;
 
+const BadgeRow = styled.div`
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+`;
+
+const Badge = styled.span<{ $color: string }>`
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: ${(p) => p.$color};
+  color: #fff;
+  text-transform: uppercase;
+`;
+
 const CardMeta = styled.div`
   display: flex;
   gap: 12px;
   margin-top: 12px;
-  padding: 12px 4px;
+  padding: 0 4px 12px;
 `;
-
 
 const CardInfo = styled.div`
   display: flex;
-  padding: 4px;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
@@ -272,7 +308,13 @@ const CardSub = styled.span`
   line-height: 1.3;
 `;
 
-/* ── CTA Section ── */
+const EmptyState = styled.div`
+  grid-column: 1 / -1;
+  padding: 48px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #909090;
+`;
 
 const CtaSection = styled.div`
   padding: 32px 24px;
@@ -312,15 +354,36 @@ const PlayerDescription = styled.p`
   max-width: 480px;
 `;
 
-
-const CHIPS = ["All", "Music", "Karaoke", "Live", "J-Pop", "Anime", "Vocaloid", "Recently added"];
-
-const STUB_ITEMS = [
-  { title: "Mr.Raindrop - Amplified (Full Karaoke)", artist: "Amplified", uploaded: "2 days ago" },
-];
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export default function HomePage() {
+  const [data, setData] = useState<KaraokeData>({});
   const [activeChip, setActiveChip] = useState("All");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch("/karaoke.json")
+      .then((r) => r.json())
+      .then((json: KaraokeData) => setData(json))
+      .catch(() => {});
+  }, []);
+
+  const categories = Object.keys(data);
+  const chips = ["All", ...categories.map(capitalize)];
+
+  const visibleItems: KaraokeEntry[] = activeChip === "All"
+    ? Object.values(data).flat()
+    : data[activeChip.toLowerCase()] ?? [];
+
+  const filtered = search.trim()
+    ? visibleItems.filter(
+        (item) =>
+          item.title.toLowerCase().includes(search.toLowerCase()) ||
+          item.artist.toLowerCase().includes(search.toLowerCase()),
+      )
+    : visibleItems;
 
   return (
     <Root>
@@ -336,7 +399,11 @@ export default function HomePage() {
 
         <NavCenter>
           <SearchBox>
-            <SearchInput placeholder="Search songs..." />
+            <SearchInput
+              placeholder="Search songs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             <SearchButton aria-label="Search">
               <FaSearch />
             </SearchButton>
@@ -352,7 +419,7 @@ export default function HomePage() {
       </Navbar>
 
       <ChipsBar>
-        {CHIPS.map((chip) => (
+        {chips.map((chip) => (
           <Chip
             key={chip}
             $active={chip === activeChip}
@@ -365,24 +432,38 @@ export default function HomePage() {
 
       <GridContainer>
         <CardGrid>
-          {STUB_ITEMS.map((item) => (
-            <Card key={item.title}>
-              <ThumbnailWrapper>
-                <FaMusic />
-                <PlayOverlay>
-                  <PlayCircle>
-                    <FaPlay />
-                  </PlayCircle>
-                </PlayOverlay>
-              </ThumbnailWrapper>
-              <CardMeta>
-                <CardInfo>
-                  <CardTitle>{item.title}</CardTitle>
-                  <CardSub>{item.artist}</CardSub>
-                </CardInfo>
-              </CardMeta>
-            </Card>
-          ))}
+          {filtered.length === 0 ? (
+            <EmptyState>No results found.</EmptyState>
+          ) : (
+            filtered.map((item) => (
+              <Card key={item.code} href={`/player?code=${item.code}`}>
+                <ThumbnailWrapper>
+                  {item.thumbnail ? (
+                    <Thumbnail src={item.thumbnail} alt={item.title} />
+                  ) : (
+                    <FaMusic />
+                  )}
+                  <PlayOverlay>
+                    <PlayCircle>
+                      <FaPlay />
+                    </PlayCircle>
+                  </PlayOverlay>
+                  {(item.has_srv || item.has_instrumental) && (
+                    <BadgeRow>
+                      {item.has_srv && <Badge $color="#7c3aed">SRV</Badge>}
+                      {item.has_instrumental && <Badge $color="#0369a1">Inst.</Badge>}
+                    </BadgeRow>
+                  )}
+                </ThumbnailWrapper>
+                <CardMeta>
+                  <CardInfo>
+                    <CardTitle>{item.title}</CardTitle>
+                    <CardSub>{item.artist}</CardSub>
+                  </CardInfo>
+                </CardMeta>
+              </Card>
+            ))
+          )}
         </CardGrid>
       </GridContainer>
 
