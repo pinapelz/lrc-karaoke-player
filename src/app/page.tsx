@@ -116,6 +116,20 @@ const NavRight = styled.div`
   gap: 6px;
 `;
 
+const NavLink = styled(Link)`
+  font-size: 13px;
+  font-weight: 500;
+  color: #606060;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background-color 0.15s, color 0.15s;
+  &:hover {
+    background-color: #f0f0f0;
+    color: #1a1a1a;
+  }
+`;
+
 const Avatar = styled.div`
   font-size: 28px;
   color: #909090;
@@ -330,6 +344,7 @@ export default function HomePage() {
         </NavCenter>
 
         <NavRight>
+          <NavLink href="/create">Create Karaoke Code</NavLink>
           <Avatar>
             <FaUserCircle />
           </Avatar>
