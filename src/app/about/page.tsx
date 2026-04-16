@@ -1,66 +1,6 @@
 "use client";
 import React from "react";
-import styled, { createGlobalStyle } from "styled-components";
-
-const GlobalStyle = createGlobalStyle`
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
-`;
-
-const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: left;
-    padding: 20px;
-    background-color: #f9f9f9;
-    color: #333;
-`;
-
-const Title = styled.h1`
-    font-size: 2.5em;
-    margin-bottom: 0.5em;
-    font-weight: 700;
-`;
-
-const Subtitle = styled.h2`
-    font-size: 1.5em;
-    margin-bottom: 1em;
-    font-weight: 600;
-`;
-
-const Paragraph = styled.p`
-    font-size: 1.2em;
-    line-height: 1.6;
-    margin-bottom: 2em;
-    text-align: left;
-    font-weight: 450;
-`;
-
-const Preformatted = styled.pre`
-    font-size: 1em;
-    background-color: #eaeaea;
-    padding: 10px;
-    border-radius: 5px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-`;
-
-const BackLink = styled.a`
-    font-size: 1em;
-    color: #007bff;
-    text-decoration: none;
-    &:hover {
-        text-decoration: underline;
-    }
-`;
-
-const Video = styled.video`
-    width: 100%;
-    max-width: 600px;
-    margin: 20px 0;
-    border-radius: 10px;
-`;
+import { GlobalStyle, Container, Title, Subtitle, Paragraph, Preformatted, BackLink, Video } from "./page.styles";
 
 const lyrics = `[ti:CRUSH]
 [al:CRUSH]

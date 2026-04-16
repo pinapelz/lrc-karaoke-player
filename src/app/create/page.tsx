@@ -1,221 +1,25 @@
 "use client";
 import { useState } from "react";
-import styled from "styled-components";
-import Link from "next/link";
 import { MdLibraryMusic } from "react-icons/md";
 import { FaCopy, FaCheck, FaExternalLinkAlt } from "react-icons/fa";
-
-const Root = styled.div`
-  min-height: 100vh;
-  background-color: #f9f9f9;
-  color: #1a1a1a;
-  font-family: "Roboto", "Segoe UI", Arial, sans-serif;
-`;
-
-const Navbar = styled.nav`
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 20px;
-  background-color: #ffffffee;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid #e5e5e5;
-`;
-
-const Logo = styled(Link)`
-  font-size: 17px;
-  font-weight: 800;
-  color: #1a1a1a;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  user-select: none;
-`;
-
-const LogoIcon = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #1a1a1a;
-  color: #fff;
-  border-radius: 6px;
-  width: 30px;
-  height: 22px;
-  font-size: 10px;
-`;
-
-const NavLink = styled(Link)`
-  font-size: 13px;
-  font-weight: 500;
-  color: #606060;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: background-color 0.15s, color 0.15s;
-  &:hover {
-    background-color: #f0f0f0;
-    color: #1a1a1a;
-  }
-`;
-
-const Content = styled.div`
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 0 24px 60px;
-`;
-
-const Heading = styled.h1`
-  font-size: 22px;
-  font-weight: 800;
-  margin: 0 0 4px;
-`;
-
-const Subheading = styled.p`
-  font-size: 13px;
-  color: #909090;
-  margin: 0 0 32px;
-`;
-
-const Form = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
-const FieldGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
-
-const Label = styled.label`
-  font-size: 12px;
-  font-weight: 600;
-  color: #606060;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const Input = styled.input`
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid #d4d4d4;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #1a1a1a;
-  background-color: #fff;
-  transition: border-color 0.15s;
-  &:focus {
-    outline: none;
-    border-color: #1a1a1a;
-  }
-  &::placeholder {
-    color: #b0b0b0;
-  }
-`;
-
-const Divider = styled.div`
-  height: 1px;
-  background-color: #e5e5e5;
-  margin: 6px 0;
-`;
-
-const Row = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-`;
-
-const GenerateButton = styled.button`
-  height: 42px;
-  padding: 0 24px;
-  border-radius: 10px;
-  border: none;
-  background-color: #1a1a1a;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s;
-  margin-top: 6px;
-  &:hover {
-    background-color: #333;
-  }
-`;
-
-const OutputSection = styled.div`
-  margin-top: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
-const OutputLabel = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #606060;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 5px;
-`;
-
-const CodeBox = styled.div`
-  position: relative;
-  background-color: #f0f0f0;
-  border: 1px solid #d4d4d4;
-  border-radius: 10px;
-  padding: 14px 48px 14px 14px;
-  font-family: "Courier New", monospace;
-  font-size: 13px;
-  color: #1a1a1a;
-  word-break: break-all;
-  line-height: 1.5;
-`;
-
-const CopyButton = styled.button<{ $copied: boolean }>`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: none;
-  background-color: ${(p) => (p.$copied ? "#22c55e" : "#d4d4d4")};
-  color: ${(p) => (p.$copied ? "#fff" : "#606060")};
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.15s, color 0.15s;
-  &:hover {
-    background-color: ${(p) => (p.$copied ? "#16a34a" : "#c0c0c0")};
-    color: #1a1a1a;
-  }
-`;
-
-const OpenLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a1a;
-  text-decoration: none;
-  border: 1px solid #d4d4d4;
-  border-radius: 8px;
-  padding: 8px 14px;
-  background-color: #fff;
-  transition: background-color 0.15s;
-  &:hover {
-    background-color: #f0f0f0;
-  }
-`;
+import { Root, Navbar, Logo, LogoIcon, NavLink } from "../styles/shared";
+import {
+  Content,
+  Heading,
+  Subheading,
+  Form,
+  FieldGroup,
+  Label,
+  Input,
+  Divider,
+  Row,
+  GenerateButton,
+  OutputSection,
+  OutputLabel,
+  CodeBox,
+  CopyButton,
+  OpenLink,
+} from "./page.styles";
 
 interface Payload {
   lrc?: string;
