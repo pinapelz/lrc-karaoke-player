@@ -83,7 +83,7 @@ export default function HomePage() {
             <LogoIcon>
               <MdLibraryMusic />
             </LogoIcon>
-            LRC-Karaoke-Player
+            LRC-Karaoke
           </Logo>
         </NavLeft>
 
@@ -101,8 +101,8 @@ export default function HomePage() {
         </NavCenter>
 
         <NavRight>
-          <NavLink href="/game">Typing Game</NavLink>
-          <NavLink href="/create">Create Karaoke Code</NavLink>
+          <NavLink href="/game">LRC-Type</NavLink>
+          <NavLink href="/create">Create</NavLink>
           <Avatar>
             <FaUserCircle />
           </Avatar>

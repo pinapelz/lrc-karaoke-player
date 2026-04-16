@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MdLibraryMusic } from "react-icons/md";
 import { FaCopy, FaCheck, FaExternalLinkAlt } from "react-icons/fa";
 import { Root, Navbar, Logo, LogoIcon, NavLink } from "../styles/shared";
@@ -21,7 +21,9 @@ import {
   OpenLink,
 } from "./page.styles";
 
-interface Payload {
+type CreateMode = "karaoke" | "typing";
+
+interface KaraokePayload {
   lrc?: string;
   srv3?: string;
   file1?: string;
@@ -30,7 +32,20 @@ interface Payload {
   offset2?: number;
 }
 
+interface TypingPayload {
+  file1?: string;
+  lrc?: string;
+  offset?: number;
+  title?: string;
+  artist?: string;
+  skip_backing?: boolean;
+  difficulty?: number;
+}
+
 export default function CreatePage() {
+  const [mode, setMode] = useState<CreateMode>("karaoke");
+
+  // Karaoke fields
   const [lrc, setLrc] = useState("");
   const [srv3, setSrv3] = useState("");
   const [file1, setFile1] = useState("");
@@ -38,21 +53,47 @@ export default function CreatePage() {
   const [offset, setOffset] = useState("");
   const [offset2, setOffset2] = useState("");
 
+  // Typing fields
+  const [typingTitle, setTypingTitle] = useState("");
+  const [typingArtist, setTypingArtist] = useState("");
+  const [typingDifficulty, setTypingDifficulty] = useState("");
+  const [skipBacking, setSkipBacking] = useState(true);
+
   const [code, setCode] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  const generate = () => {
-    const payload: Payload = {};
-    if (lrc.trim()) payload.lrc = lrc.trim();
-    if (srv3.trim()) payload.srv3 = srv3.trim();
-    if (file1.trim()) payload.file1 = file1.trim();
-    if (file2.trim()) payload.file2 = file2.trim();
-    if (offset.trim() !== "") payload.offset = Number(offset);
-    if (offset2.trim() !== "") payload.offset2 = Number(offset2);
-    setCode(btoa(JSON.stringify(payload)));
+  const resetCopyStates = () => {
     setCopiedCode(false);
     setCopiedUrl(false);
+  };
+
+  const generate = () => {
+    if (mode === "karaoke") {
+      const payload: KaraokePayload = {};
+      if (lrc.trim()) payload.lrc = lrc.trim();
+      if (srv3.trim()) payload.srv3 = srv3.trim();
+      if (file1.trim()) payload.file1 = file1.trim();
+      if (file2.trim()) payload.file2 = file2.trim();
+      if (offset.trim() !== "") payload.offset = Number(offset);
+      if (offset2.trim() !== "") payload.offset2 = Number(offset2);
+
+      setCode(btoa(JSON.stringify(payload)));
+      resetCopyStates();
+      return;
+    }
+
+    const payload: TypingPayload = {};
+    if (file1.trim()) payload.file1 = file1.trim();
+    if (lrc.trim()) payload.lrc = lrc.trim();
+    if (offset.trim() !== "") payload.offset = Number(offset);
+    if (typingTitle.trim()) payload.title = typingTitle.trim();
+    if (typingArtist.trim()) payload.artist = typingArtist.trim();
+    payload.skip_backing = skipBacking;
+    if (typingDifficulty.trim() !== "") payload.difficulty = Number(typingDifficulty);
+
+    setCode(btoa(JSON.stringify(payload)));
+    resetCopyStates();
   };
 
   const copy = (text: string, which: "code" | "url") => {
@@ -66,9 +107,14 @@ export default function CreatePage() {
     }
   };
 
-  const shareUrl = code
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/player?code=${code}`
-    : "";
+  const playerPath = mode === "typing" ? "/typing" : "/player";
+  const shareUrl = useMemo(
+    () =>
+      code
+        ? `${typeof window !== "undefined" ? window.location.origin : ""}${playerPath}?code=${code}`
+        : "",
+    [code, playerPath]
+  );
 
   return (
     <Root>
@@ -83,15 +129,45 @@ export default function CreatePage() {
       </Navbar>
 
       <Content>
-        <Heading>Create a Karaoke Code</Heading>
+        <Heading>Create a Code</Heading>
         <Subheading>
-          Fill in the URLs and offsets for your session, then generate a
-          shareable code.
+          Switch between Karaoke and Typing Game modes, then generate a shareable code for your session.
         </Subheading>
 
         <Form>
+          <Row>
+            <GenerateButton
+              onClick={() => {
+                setMode("karaoke");
+                setCode(null);
+                resetCopyStates();
+              }}
+              style={{
+                backgroundColor: mode === "karaoke" ? "#1a1a1a" : "#e5e5e5",
+                color: mode === "karaoke" ? "#fff" : "#1a1a1a",
+              }}
+            >
+              MoekyunKaraoke
+            </GenerateButton>
+            <GenerateButton
+              onClick={() => {
+                setMode("typing");
+                setCode(null);
+                resetCopyStates();
+              }}
+              style={{
+                backgroundColor: mode === "typing" ? "#1a1a1a" : "#e5e5e5",
+                color: mode === "typing" ? "#fff" : "#1a1a1a",
+              }}
+            >
+              LRC-Type
+            </GenerateButton>
+          </Row>
+
+          <Divider />
+
           <FieldGroup>
-            <Label>Media (file1)</Label>
+            <Label>Media - The main audio that plays</Label>
             <Input
               type="url"
               placeholder="https://example.com/song.mp4"
@@ -111,49 +187,108 @@ export default function CreatePage() {
           </FieldGroup>
 
           <FieldGroup>
-            <Label>SRV3 Subtitles</Label>
+            <Label title="Offset in milliseconds. Increase this value if the main audio is ahead of the lyrics.">
+              LRC Offset (ms)
+            </Label>
             <Input
-              type="url"
-              placeholder="https://example.com/song.srv3"
-              value={srv3}
-              onChange={(e) => setSrv3(e.target.value)}
+              type="number"
+              placeholder="0"
+              value={offset}
+              onChange={(e) => setOffset(e.target.value)}
+              step="25"
             />
           </FieldGroup>
 
-          <Divider />
+          {mode === "karaoke" ? (
+            <>
+              <FieldGroup>
+                <Label title="SRV3 is a YouTube-style timed text format used for subtitles. Provide a .srv3 URL to display timed subtitles in the player (optional).">
+                  SRV3 Subtitles (Optional)
+                </Label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/song.srv3"
+                  value={srv3}
+                  onChange={(e) => setSrv3(e.target.value)}
+                />
+              </FieldGroup>
 
-          <FieldGroup>
-            <Label>Audio #2</Label>
-            <Input
-              type="url"
-              placeholder="https://example.com/instrumental.mp3"
-              value={file2}
-              onChange={(e) => setFile2(e.target.value)}
-            />
-          </FieldGroup>
+              <Divider />
 
-          <Row>
-            <FieldGroup>
-              <Label>LRC Offset (ms)</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={offset}
-                onChange={(e) => setOffset(e.target.value)}
-                step="25"
-              />
-            </FieldGroup>
-            <FieldGroup>
-              <Label>Audio #2 Offset (ms)</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={offset2}
-                onChange={(e) => setOffset2(e.target.value)}
-                step="25"
-              />
-            </FieldGroup>
-          </Row>
+              <FieldGroup>
+                <Label>Backing Audio #2 (Optional)</Label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/instrumental.mp3"
+                  value={file2}
+                  onChange={(e) => setFile2(e.target.value)}
+                />
+              </FieldGroup>
+
+              <FieldGroup>
+                <Label title="Offset in milliseconds. Increase this value if the main audio is ahead of the backing audio.">
+                  Backing Audio #2 Offset (ms)
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={offset2}
+                  onChange={(e) => setOffset2(e.target.value)}
+                  step="25"
+                />
+              </FieldGroup>
+            </>
+          ) : (
+            <>
+              <Divider />
+              <Row>
+                <FieldGroup>
+                  <Label>Title</Label>
+                  <Input
+                    type="text"
+                    placeholder="Song Title"
+                    value={typingTitle}
+                    onChange={(e) => setTypingTitle(e.target.value)}
+                  />
+                </FieldGroup>
+                <FieldGroup>
+                  <Label>Artist</Label>
+                  <Input
+                    type="text"
+                    placeholder="Artist Name"
+                    value={typingArtist}
+                    onChange={(e) => setTypingArtist(e.target.value)}
+                  />
+                </FieldGroup>
+              </Row>
+
+              <Row>
+                <FieldGroup>
+                  <Label title="When enabled, lyrics inside parentheses are treated as backing lyrics and skipped.">
+                    Skip Backing
+                  </Label>
+                  <Input
+                    type="checkbox"
+                    checked={skipBacking}
+                    onChange={(e) => setSkipBacking(e.target.checked)}
+                    style={{ width: "18px", height: "18px", marginTop: "10px" }}
+                  />
+                </FieldGroup>
+
+                <FieldGroup>
+                  <Label>Difficulty (number)</Label>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    min="1"
+                    step="1"
+                    value={typingDifficulty}
+                    onChange={(e) => setTypingDifficulty(e.target.value)}
+                  />
+                </FieldGroup>
+              </Row>
+            </>
+          )}
 
           <GenerateButton onClick={generate}>Generate Code</GenerateButton>
         </Form>
@@ -189,7 +324,7 @@ export default function CreatePage() {
             </div>
 
             <OpenLink href={shareUrl} target="_blank" rel="noopener noreferrer">
-              <FaExternalLinkAlt /> Open in Player
+              <FaExternalLinkAlt /> Open in {mode === "typing" ? "Typing Game" : "Player"}
             </OpenLink>
           </OutputSection>
         )}

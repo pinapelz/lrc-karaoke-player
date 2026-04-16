@@ -66,7 +66,7 @@ import {
   HomeBtn,
 } from "./page.styles";
 import { gReducer, initialGState } from "./game.stat";
-import { formatTime, parseLrcLines, type GameLine } from "./game.utils";
+import { formatTime, parseLrcLines } from "./game.utils";
 
 type GamePhase = "idle" | "countdown" | "playing" | "paused" | "finished";
 
@@ -407,14 +407,14 @@ function GameInner() {
             LRC-Type
           </Link>
           <Link
-            href="/player"
+            href="/"
             style={{
               fontSize: 13,
               color: "rgba(255,255,255,0.6)",
               textDecoration: "none",
             }}
           >
-            Player
+            Karaoke
           </Link>
           <Link
             href="/create"
@@ -463,11 +463,11 @@ function GameInner() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Load another song
+                  Load a chart
                 </div>
                 <CodeInputRow>
                   <CodeInputField
-                    placeholder="Paste MoekyunKaraoke or MoekyunKaraoke+ code..."
+                    placeholder="Enter a MoekyunKaraoke or LRC-Type code..."
                     value={codeInput}
                     onChange={(e) => setCodeInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleLoadCode()}
@@ -475,16 +475,6 @@ function GameInner() {
                   <CodeLoadBtn onClick={handleLoadCode}>Load</CodeLoadBtn>
                 </CodeInputRow>
               </CodeSection>
-              <Link
-                href="/player"
-                style={{
-                  fontSize: 13,
-                  color: "rgba(255,255,255,0.35)",
-                  textDecoration: "none",
-                }}
-              >
-                Back to Player
-              </Link>
             </StartCard>
           </StartOverlay>
         )}
