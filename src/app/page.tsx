@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FaPlay, FaMusic, FaSearch, FaUserCircle } from "react-icons/fa";
+import { FaPlay, FaMusic, FaSearch, FaUserCircle, FaKeyboard } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
 import { Root, Navbar, Logo, LogoIcon, NavLink } from "./styles/shared";
 import {
@@ -101,6 +101,7 @@ export default function HomePage() {
         </NavCenter>
 
         <NavRight>
+          <NavLink href="/game">Typing Game</NavLink>
           <NavLink href="/create">Create Karaoke Code</NavLink>
           <Avatar>
             <FaUserCircle />
@@ -164,6 +165,13 @@ export default function HomePage() {
         </OpenPlayerLink>
         <PlayerDescription>
           Load your own video, audio, LRC lyrics
+        </PlayerDescription>
+        <SectionHeading style={{ marginTop: 24 }}>Typing Game</SectionHeading>
+        <OpenPlayerLink href="/game">
+          <FaKeyboard /> Play Typing Game
+        </OpenPlayerLink>
+        <PlayerDescription>
+          Type lyrics in sync with the music to score points
         </PlayerDescription>
       </CtaSection>
     </Root>
