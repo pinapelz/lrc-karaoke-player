@@ -30,6 +30,7 @@ import {
   CurrentWrap,
   LineTimingMeta,
   LineTimingValue,
+  LineTimingRow,
   LineTimingBar,
   LineTimingFill,
   CharRow,
@@ -66,7 +67,7 @@ import {
   HomeBtn,
 } from "./page.styles";
 import { gReducer, initialGState } from "./game.stat";
-import { formatTime, parseLrcLines } from "./game.utils";
+import { formatTime, parseLrcLines, calculateCPSNeeded } from "./game.utils";
 
 type GamePhase = "idle" | "countdown" | "playing" | "paused" | "finished";
 
@@ -82,6 +83,7 @@ function GameInner() {
   const [currentMs, setCurrentMs] = useState(0);
   const [lineTimingPct, setLineTimingPct] = useState(0);
   const [lineRemainingMs, setLineRemainingMs] = useState(0);
+  const [currentLineTime, setCurrentLineTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [progressPct, setProgressPct] = useState(0);
   const [gameDurationMs, setGameDurationMs] = useState(0);
@@ -169,6 +171,7 @@ function GameInner() {
       lineAnimRef.current = { startMs: 0, endMs: 0, startPerf: 0 };
       setLineTimingPct(0);
       setLineRemainingMs(0);
+      setCurrentLineTime(-1);
       return;
     }
     const start = gameLines[idx].millisecond;
@@ -179,7 +182,9 @@ function GameInner() {
       startPerf: performance.now(),
     };
     setLineTimingPct(0);
-    setLineRemainingMs(Math.max(0, end - start));
+    const currentLineTime = end - start;
+    setLineRemainingMs(Math.max(0, currentLineTime));
+    setCurrentLineTime(Math.max(currentLineTime, currentLineTime));
   }, [g.displayedLineIdx, gameLines]);
 
   useEffect(() => {
@@ -561,12 +566,23 @@ function GameInner() {
                 </UpcomingText>
               </UpcomingWrap>
               <CurrentWrap style={{ position: "relative" }}>
-                <LineTimingMeta>
-                  Time left:{" "}
-                  <LineTimingValue>
-                    {Math.max(0, lineRemainingMs / 1000).toFixed(1)}s
-                  </LineTimingValue>
-                </LineTimingMeta>
+                <LineTimingRow>
+                  <LineTimingMeta>
+                    Time left:{" "}
+                    <LineTimingValue>
+                      {Math.max(0, lineRemainingMs / 1000).toFixed(1)}s
+                    </LineTimingValue>
+                  </LineTimingMeta>
+                  <LineTimingMeta>
+                    Estimated CPS:{" "}
+                    <LineTimingValue>
+                      {calculateCPSNeeded(
+                        gameLines[g.displayedLineIdx].content,
+                        currentLineTime / 1000
+                      ).toFixed(1)}
+                    </LineTimingValue>
+                  </LineTimingMeta>
+                </LineTimingRow>
                 <LineTimingBar>
                   <LineTimingFill $pct={lineTimingPct} />
                 </LineTimingBar>
@@ -625,7 +641,7 @@ function GameInner() {
                 </CharRow>
                 {clearShowing && <ClearToast>CLEAR!</ClearToast>}
                 <CompletedLineFade>
-                  {g.lineCompleted ? "Cleared - waiting for next line..." : ""}
+                  {g.lineCompleted ? "Cleared - waiting for next line..." : gameLines[g.displayedLineIdx].content}
                 </CompletedLineFade>
               </CurrentWrap>
             </>

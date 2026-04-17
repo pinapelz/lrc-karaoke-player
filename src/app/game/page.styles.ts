@@ -149,6 +149,7 @@ export const UpcomingText = styled.p`
   font-size: 20px;
   color: rgba(255, 255, 255, 0.30);
   font-weight: 400;
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   min-height: 28px;
   white-space: nowrap;
   overflow: hidden;
@@ -164,11 +165,18 @@ export const CurrentWrap = styled.div`
   gap: 10px;
 `;
 
+export const LineTimingRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
 export const LineTimingMeta = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  font-size: 11px;
+  justify-content: flex-start;
+  font-size: 13px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
@@ -219,7 +227,7 @@ export const CharBox = styled.span<{
   justify-content: center;
   font-size: 36px;
   font-weight: 700;
-  font-family: monospace;
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   padding: 0 3px;
   border-radius: 4px;
   transition: all 0.08s ease;
