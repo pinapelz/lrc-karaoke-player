@@ -2,6 +2,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
@@ -100,6 +101,9 @@ function GameInner() {
   const [clearShowing, setClearShowing] = useState(false);
   const [comboAnimKey, setComboAnimKey] = useState(0);
   const [countdown, setCountdown] = useState(0);
+  const charRowRef = useRef<HTMLDivElement | null>(null);
+  const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [wrapSpaceIndicators, setWrapSpaceIndicators] = useState<boolean[]>([]);
   const countdownIntervalRef = useRef<number | null>(null);
 
   const [g, dispatch] = useReducer(gReducer, initialGState);
@@ -121,6 +125,58 @@ function GameInner() {
     elapsedMs > 0 ? Math.round(g.totalCorrect / 5 / (elapsedMs / 60000)) : 0;
 
   const gRef = useRef(g);
+  const currentLineContent =
+    g.displayedLineIdx >= 0 ? gameLines[g.displayedLineIdx]?.content ?? "" : "";
+
+  useEffect(() => {
+    charRefs.current = [];
+  }, [currentLineContent]);
+
+  useLayoutEffect(() => {
+    if (!charRowRef.current) return;
+    let frame = 0;
+    const text = currentLineContent.toLowerCase();
+
+    const recompute = () => {
+      const nodes = charRefs.current;
+      const indicators = new Array(text.length).fill(false);
+      for (let i = 0; i < text.length - 1; i += 1) {
+        if (text[i] !== " ") continue;
+        const curr = nodes[i];
+        const next = nodes[i + 1];
+        if (!curr || !next) continue;
+        const currRect = curr.getBoundingClientRect();
+        const nextRect = next.getBoundingClientRect();
+        if (nextRect.top - currRect.top > 1) {
+          indicators[i] = true;
+        }
+      }
+      setWrapSpaceIndicators(indicators);
+    };
+
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(recompute);
+      });
+    };
+
+    schedule();
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(schedule);
+    }
+
+    const observer = new ResizeObserver(schedule);
+    observer.observe(charRowRef.current);
+    window.addEventListener("resize", schedule);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", schedule);
+      cancelAnimationFrame(frame);
+    };
+  }, [currentLineContent]);
   useEffect(() => {
     gRef.current = g;
   }, [g]);
@@ -381,6 +437,17 @@ function GameInner() {
   useEffect(() => {
     if (phase !== "playing") return;
     const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        const audio = audioRef.current;
+        if (!audio) return;
+        e.preventDefault();
+        const direction = e.key === "ArrowRight" ? 1 : -1;
+        const seekSeconds = 5;
+        const target = audio.currentTime + direction * seekSeconds;
+        const duration = Number.isFinite(audio.duration) ? audio.duration : target;
+        audio.currentTime = Math.min(Math.max(0, target), duration);
+        return;
+      }
       if (e.key.length === 1) {
         e.preventDefault();
         handleKeyPress(e.key);
@@ -526,12 +593,11 @@ function GameInner() {
 
         <HUD>
           <HudStat>
-            <HudValue $color="#a78bfa">{g.score.toLocaleString()}</HudValue>
+            <HudValue>{g.score.toLocaleString()}</HudValue>
             <HudLabel>Score</HudLabel>
           </HudStat>
           <HudStat>
             <ComboValue
-              $color="#fbbf24"
               $animate={comboAnimKey > 0}
               key={`combo-${comboAnimKey}`}
             >
@@ -540,7 +606,7 @@ function GameInner() {
             <HudLabel>Combo</HudLabel>
           </HudStat>
           <HudStat>
-            <HudValue $color="#22c55e">{accuracy}%</HudValue>
+            <HudValue>{accuracy}%</HudValue>
             <HudLabel>Accuracy</HudLabel>
           </HudStat>
           <HudStat>
@@ -548,7 +614,7 @@ function GameInner() {
             <HudLabel>WPM</HudLabel>
           </HudStat>
           <HudStat>
-            <HudValue $color="#ef4444">{g.totalMiss}</HudValue>
+            <HudValue>{g.totalMiss}</HudValue>
             <HudLabel>Misses</HudLabel>
           </HudStat>
         </HUD>
@@ -586,10 +652,10 @@ function GameInner() {
                 <LineTimingBar>
                   <LineTimingFill $pct={lineTimingPct} />
                 </LineTimingBar>
-                <CharRow>
+                <CharRow ref={charRowRef}>
                   {(() => {
-                    const text =
-                      gameLines[g.displayedLineIdx].content.toLowerCase();
+                    const rawText = gameLines[g.displayedLineIdx].content;
+                    const text = rawText.toLowerCase();
                     const tokens = text.split(/(\s+)/).filter(Boolean);
                     let renderIndex = 0;
                     return tokens.flatMap((token, tokenIdx) => {
@@ -600,12 +666,26 @@ function GameInner() {
                           else if (renderIndex === g.typedCount)
                             state = wrongChar ? "wrong" : "active";
                           else state = "pending";
+                          const charIndex = renderIndex;
+                          const showIndicator =
+                            ch === " " &&
+                            wrapSpaceIndicators[charIndex] &&
+                            state !== "typed";
+                          const displayChar =
+                            ch === " "
+                              ? showIndicator
+                                ? "␣"
+                                : "\u00A0"
+                              : ch;
                           const element = (
                             <CharBox
                               key={`space-${tokenIdx}-${spaceIdx}`}
                               $state={state}
+                              ref={(el) => {
+                                charRefs.current[charIndex] = el;
+                              }}
                             >
-                              {ch === " " ? "\u00A0" : ch}
+                              {displayChar}
                             </CharBox>
                           );
                           renderIndex += 1;
@@ -619,10 +699,14 @@ function GameInner() {
                         else if (renderIndex === g.typedCount)
                           state = wrongChar ? "wrong" : "active";
                         else state = "pending";
+                        const charIndex = renderIndex;
                         const element = (
                           <CharBox
                             key={`char-${tokenIdx}-${charIdx}`}
                             $state={state}
+                            ref={(el) => {
+                              charRefs.current[charIndex] = el;
+                            }}
                           >
                             {ch}
                           </CharBox>
