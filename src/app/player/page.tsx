@@ -63,6 +63,7 @@ function KaraokePage() {
   const supplementAudioRef = useRef<HTMLAudioElement>(null);
   const [captionsText, setCaptionsText] = useState<string>("");
   const [offset, setOffset] = useState<number>(0);
+  const [offsetInput, setOffsetInput] = useState<string>("0");
   const [dragOver, setDragOver] = useState<boolean>(false);
   const [statusText, setStatusText] = useState<string>("No video selected");
   const [balance, setBalance] = useState<number>(0);
@@ -93,6 +94,10 @@ function KaraokePage() {
   useEffect(() => {
     localStorage.setItem("fontColor", fontColor);
   }, [fontColor]);
+
+  useEffect(() => {
+    setOffsetInput(String(offset));
+  }, [offset]);
 
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -567,8 +572,19 @@ function KaraokePage() {
               <PanelFieldLabel>Offset</PanelFieldLabel>
               <PanelNumberInput
                 type="number"
-                value={offset}
-                onChange={(e) => setOffset(Number(e.target.value))}
+                value={offsetInput}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  if (next === "" || next === "-" || next === "+") {
+                    setOffsetInput(next);
+                    return;
+                  }
+                  const parsed = Number(next);
+                  if (!Number.isNaN(parsed)) {
+                    setOffset(parsed);
+                    setOffsetInput(next);
+                  }
+                }}
                 step="25"
               />
 
