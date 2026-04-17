@@ -257,6 +257,17 @@ function GameInner() {
     return idx;
   }, [currentMs, gameLines]);
 
+  const intermissionData = useMemo(() => {
+    const firstMs = gameLines[0]?.millisecond ?? 0;
+    if (firstMs <= 0) {
+      return { pct: 100, remainingMs: 0 };
+    }
+    const clampedCurrent = Math.max(0, currentMs);
+    const remainingMs = Math.max(0, firstMs - clampedCurrent);
+    const pct = Math.min(100, Math.max(0, (clampedCurrent / firstMs) * 100));
+    return { pct, remainingMs };
+  }, [gameLines, currentMs]);
+
   useEffect(() => {
     const idx = g.displayedLineIdx;
     if (idx < 0 || !gameLines[idx]) {
@@ -397,14 +408,6 @@ function GameInner() {
       media.play();
       setPhase("playing");
       gameStartTimeRef.current = Date.now();
-      if (gameLines[0]) {
-        dispatch({
-          type: "ADVANCE",
-          newIdx: 0,
-          prevCompleted: true,
-        });
-        lastHandledIdxRef.current = 0;
-      }
     };
 
     countdownIntervalRef.current = window.setInterval(() => {
@@ -685,7 +688,29 @@ function GameInner() {
         <GameArea>
           {phase === "playing" &&
             g.displayedLineIdx < 0 &&
-            gameLines.length > 0 && <GetReadyText>Get ready...</GetReadyText>}
+            gameLines.length > 0 && (
+              <>
+                <UpcomingWrap>
+                  <UpcomingLabel>Next</UpcomingLabel>
+                  <UpcomingText>{gameLines[0]?.content ?? ""}</UpcomingText>
+                </UpcomingWrap>
+                <CurrentWrap style={{ position: "relative" }}>
+                  <LineTimingRow>
+                    <LineTimingMeta>
+                      Time to first line:{" "}
+                      <LineTimingValue>
+                        {Math.max(0, intermissionData.remainingMs / 1000).toFixed(1)}s
+                      </LineTimingValue>
+                    </LineTimingMeta>
+                  </LineTimingRow>
+                  <LineTimingBar>
+                    <LineTimingFill $pct={intermissionData.pct} />
+                  </LineTimingBar>
+                  <CharRow ref={charRowRef} />
+                  <CompletedLineFade>[INTERMISSION]</CompletedLineFade>
+                </CurrentWrap>
+              </>
+            )}
           {g.displayedLineIdx >= 0 && gameLines[g.displayedLineIdx] && (
             <>
               <UpcomingWrap>
