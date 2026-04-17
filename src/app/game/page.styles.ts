@@ -95,10 +95,10 @@ export const HudStat = styled.div`
   gap: 2px;
 `;
 
-export const HudValue = styled.span<{ $color?: string }>`
+export const HudValue = styled.span`
   font-size: 22px;
   font-weight: 700;
-  color: ${({ $color }) => $color ?? "#ffffff"};
+  color: #ffffff;
 `;
 
 export const HudLabel = styled.span`
