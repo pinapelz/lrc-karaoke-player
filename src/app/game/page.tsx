@@ -101,6 +101,7 @@ function GameInner() {
   const [clearShowing, setClearShowing] = useState(false);
   const [comboAnimKey, setComboAnimKey] = useState(0);
   const [countdown, setCountdown] = useState(0);
+  const [skipBacking, setSkipBacking] = useState(false);
   const charRowRef = useRef<HTMLDivElement | null>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [wrapSpaceIndicators, setWrapSpaceIndicators] = useState<boolean[]>([]);
@@ -108,7 +109,10 @@ function GameInner() {
 
   const [g, dispatch] = useReducer(gReducer, initialGState);
 
-  const gameLines = useMemo(() => parseLrcLines(lrcContent), [lrcContent]);
+  const gameLines = useMemo(
+    () => parseLrcLines(lrcContent, { skipBacking }),
+    [lrcContent, skipBacking]
+  );
   const isReady = !loadingLrc && !!lrcContent && !!audioUrl;
 
   const accuracy =
@@ -304,8 +308,8 @@ function GameInner() {
     });
   }, [timeBasedLineIdx]);
 
-  const loadData = useCallback((data: Record<string, string>) => {
-    if (data.lrc) {
+  const loadData = useCallback((data: Record<string, unknown>) => {
+    if (typeof data.lrc === "string" && data.lrc) {
       setLoadingLrc(true);
       fetch(data.lrc)
         .then((r) => r.text())
@@ -314,10 +318,16 @@ function GameInner() {
           setLoadingLrc(false);
         });
     }
-    if (data.file1) setAudioUrl(data.file1);
-    if (data.offset) setOffset(Number(data.offset));
-    if (data.title) setSongTitle(data.title);
-    if (data.artist) setSongArtist(data.artist);
+    if (typeof data.file1 === "string") setAudioUrl(data.file1);
+    if (typeof data.offset === "number") setOffset(data.offset);
+    if (typeof data.offset === "string" && data.offset.trim() !== "")
+      setOffset(Number(data.offset));
+    if (typeof data.title === "string") setSongTitle(data.title);
+    if (typeof data.artist === "string") setSongArtist(data.artist);
+    if (typeof data.skip_backing === "boolean")
+      setSkipBacking(data.skip_backing);
+    if (typeof data.skip_backing === "string")
+      setSkipBacking(data.skip_backing === "true");
   }, []);
 
   useEffect(() => {
@@ -325,7 +335,7 @@ function GameInner() {
     if (!code) return;
     try {
       const json = atob(code);
-      const data = JSON.parse(json) as Record<string, string>;
+      const data = JSON.parse(json) as Record<string, unknown>;
       loadData(data);
     } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -399,7 +409,7 @@ function GameInner() {
     if (!codeInput.trim()) return;
     try {
       const json = atob(codeInput.trim());
-      const data = JSON.parse(json) as Record<string, string>;
+      const data = JSON.parse(json) as Record<string, unknown>;
       loadData(data);
       handleRestart();
       toast.success("Song loaded!", { theme: "dark" });

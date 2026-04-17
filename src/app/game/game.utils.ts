@@ -3,9 +3,13 @@ export interface GameLine {
   content: string;
 }
 
-export function parseLrcLines(lrcText: string): GameLine[] {
+export function parseLrcLines(
+  lrcText: string,
+  options?: { skipBacking?: boolean }
+): GameLine[] {
   const result: GameLine[] = [];
   const lineRegex = /\[(\d{2,3}):(\d{2})\.(\d{2,3})\]/g;
+  const { skipBacking = false } = options ?? {};
 
   for (const rawLine of lrcText.split("\n")) {
     const timestamps: number[] = [];
@@ -27,10 +31,10 @@ export function parseLrcLines(lrcText: string): GameLine[] {
 
     if (timestamps.length === 0) continue;
 
-    const content = rawLine
-      .slice(lastIndex)
-      .replace(/\([^)]*\)/g, "")
-      .trim();
+    const content = (skipBacking
+      ? rawLine.slice(lastIndex).replace(/\([^)]*\)/g, "")
+      : rawLine.slice(lastIndex)
+    ).trim();
     if (!content) continue;
 
     for (const ms of timestamps) {
