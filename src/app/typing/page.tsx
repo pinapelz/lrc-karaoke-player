@@ -138,7 +138,7 @@ export default function TypingPage() {
             <EmptyState>No results found.</EmptyState>
           ) : (
             filtered.map((item) => (
-              <Card key={item.code} href={`/game?code=${item.code}`}>
+              <Card key={item.code} href={`/game?code=${item.code}`} target="_blank" rel="noopener noreferrer">
                 <ThumbnailWrapper>
                   {item.thumbnail ? (
                     <Thumbnail src={item.thumbnail} alt={item.title} />

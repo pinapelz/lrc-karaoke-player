@@ -103,8 +103,8 @@ export default function CreatePage() {
     }
   };
 
-  const playerPath = mode === "typing" ? "/typing" : "/player";
-  const shareUrl = code ? `${playerPath}?code=${code}` : "";
+  const playerPath = mode === "typing" ? "/game" : "/player";
+  const shareUrl = code ? `${window.location.origin}${playerPath}?code=${code}` : "";
 
   return (
     <Root>
