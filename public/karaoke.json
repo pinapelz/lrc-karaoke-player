@@ -3,10 +3,28 @@
     {
       "title": "Mr.Raindrop",
       "artist": "Amplified",
-      "thumbnail": "",
+      "thumbnail": "https://i3.ytimg.com/vi/7E17eEfl77I/maxresdefault.jpg",
       "has_srv": false,
       "has_instrumental": false,
       "code": "eyJscmMiOiJodHRwczovL3V0ZnMuaW8vZi9lMmUxOGVhNy05ODQxLTQzN2ItOWNhMy01NzIzMzU1YmQ0MWEtcmxjazQ2LmxyYyIsImZpbGUxIjoiaHR0cHM6Ly91dGZzLmlvL2YvODRmNWRmYTYtODIxZC00MDdmLWExNmQtYTY4NWIwOWMxMWQ5LTd4eDJoNC53ZWJtIiwib2Zmc2V0IjotMTU1MH0="
+    }
+  ],
+  "K-POP": [
+    {
+      "title": "Blue Valentine",
+      "artist": "NMIXX",
+      "thumbnail": "https://file.garden/aeFyzu6P_R_1-oSm/Karaoke/TLftyCObb_E-HD.jpg",
+      "has_srv": false,
+      "has_instrumental": true,
+      "code": "eyJscmMiOiJodHRwczovL2ZpbGUuZ2FyZGVuL2FlRnl6dTZQX1JfMS1vU20vS2FyYW9rZS9ibHVlX3ZhbGVudGluZS5scmMiLCJmaWxlMSI6Imh0dHBzOi8vZmlsZS5nYXJkZW4vYWVGeXp1NlBfUl8xLW9TbS9LYXJhb2tlL0JsdWUlMjBWYWxlbnRpbmUlMjAoSW5zdC4pJTIwJTVCWGdoNUQxU1RWSk0lNUQud2VibSIsImZpbGUyIjoiaHR0cHM6Ly9maWxlLmdhcmRlbi9hZUZ5enU2UF9SXzEtb1NtL0thcmFva2UvQmx1ZSUyMFZhbGVudGluZSUyMChBJTIwQ2FwcGVsbGElMjBWZXIuKSUyMCU1QnZBYU83MFFhUG0wJTVELndlYm0ifQ=="
+    },
+    {
+      "title": "PERFECT NIGHT (MV)",
+      "artist": "LE SSERAFIM",
+      "thumbnail": "https://file.garden/aeFyzu6P_R_1-oSm/Karaoke/perfectnight.jpg",
+      "has_srv": false,
+      "has_instrumental": false,
+      "code": "eyJscmMiOiJodHRwczovL2ZpbGUuZ2FyZGVuL2FlRnl6dTZQX1JfMS1vU20vS2FyYW9rZS9wZXJmZWN0X25pZ2h0LmxyYyIsImZpbGUxIjoiaHR0cHM6Ly9maWxlLmdhcmRlbi9hZUZ5enU2UF9SXzEtb1NtL0thcmFva2UvTEUlMjBTU0VSQUZJTSUyMCglRUIlQTUlQjQlRUMlODQlQjglRUIlOUQlQkMlRUQlOTUlOEMpJTIwJ1BlcmZlY3QlMjBOaWdodCclMjBPRkZJQ0lBTCUyME0lRTIlQTclQjhWJTIwd2l0aCUyME9WRVJXQVRDSCUyMDIlMjAlNUJoTHZXeTJiODU3SSU1RC53ZWJtIiwib2Zmc2V0IjotMTI1MDB9"
     }
   ]
 }

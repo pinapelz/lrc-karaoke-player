@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { FaPlay, FaMusic, FaSearch, FaUserCircle, FaKeyboard } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
-import { Root, Navbar, Logo, LogoIcon, NavLink } from "./styles/shared";
+import { Root, Navbar, Logo, LogoIcon, NavLink, NavCtaLink } from "./styles/shared";
 import {
   NavLeft,
   NavCenter,
@@ -50,7 +50,7 @@ function capitalize(s: string) {
 
 export default function HomePage() {
   const [data, setData] = useState<KaraokeData>({});
-  const [activeChip, setActiveChip] = useState("All");
+  const [activeChip, setActiveChip] = useState("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -61,19 +61,28 @@ export default function HomePage() {
   }, []);
 
   const categories = Object.keys(data);
-  const chips = ["All", ...categories.map(capitalize)];
+  const chips = [
+    { key: "all", label: "All" },
+    ...categories.map((category) => ({
+      key: category,
+      label: capitalize(category),
+    })),
+  ];
 
-  const visibleItems: KaraokeEntry[] = activeChip === "All"
+  const visibleItems: KaraokeEntry[] = activeChip === "all"
     ? Object.values(data).flat()
-    : data[activeChip.toLowerCase()] ?? [];
+    : data[activeChip] ?? [];
 
-  const filtered = search.trim()
-    ? visibleItems.filter(
+  const normalizedSearch = search.trim().toLowerCase();
+  const searchableItems = normalizedSearch ? Object.values(data).flat() : visibleItems;
+
+  const filtered = normalizedSearch
+    ? searchableItems.filter(
         (item) =>
-          item.title.toLowerCase().includes(search.toLowerCase()) ||
-          item.artist.toLowerCase().includes(search.toLowerCase()),
+          item.title.toLowerCase().includes(normalizedSearch) ||
+          item.artist.toLowerCase().includes(normalizedSearch),
       )
-    : visibleItems;
+    : searchableItems;
 
   return (
     <Root>
@@ -101,8 +110,8 @@ export default function HomePage() {
         </NavCenter>
 
         <NavRight>
-          <NavLink href="/game">LRC-Type</NavLink>
-          <NavLink href="/create">Create</NavLink>
+          <NavCtaLink href="/game">LRC-Type</NavCtaLink>
+          <NavCtaLink href="/create">Create</NavCtaLink>
           <Avatar>
             <FaUserCircle />
           </Avatar>
@@ -112,11 +121,11 @@ export default function HomePage() {
       <ChipsBar>
         {chips.map((chip) => (
           <Chip
-            key={chip}
-            $active={chip === activeChip}
-            onClick={() => setActiveChip(chip)}
+            key={chip.key}
+            $active={chip.key === activeChip}
+            onClick={() => setActiveChip(chip.key)}
           >
-            {chip}
+            {chip.label}
           </Chip>
         ))}
       </ChipsBar>
@@ -142,7 +151,7 @@ export default function HomePage() {
                   {(item.has_srv || item.has_instrumental) && (
                     <BadgeRow>
                       {item.has_srv && <Badge $color="#7c3aed">SRV</Badge>}
-                      {item.has_instrumental && <Badge $color="#0369a1">Inst.</Badge>}
+                      {item.has_instrumental && <Badge $color="#0369a1">Inst. Track</Badge>}
                     </BadgeRow>
                   )}
                 </ThumbnailWrapper>
@@ -165,13 +174,6 @@ export default function HomePage() {
         </OpenPlayerLink>
         <PlayerDescription>
           Load your own video, audio, LRC lyrics
-        </PlayerDescription>
-        <SectionHeading style={{ marginTop: 24 }}>Typing Game</SectionHeading>
-        <OpenPlayerLink href="/game">
-          <FaKeyboard /> Play Typing Game
-        </OpenPlayerLink>
-        <PlayerDescription>
-          Type lyrics in sync with the music to score points
         </PlayerDescription>
       </CtaSection>
     </Root>

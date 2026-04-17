@@ -59,3 +59,20 @@ export const NavLink = styled(Link)`
     color: #1a1a1a;
   }
 `;
+
+export const NavCtaLink = styled(Link)`
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  &:hover {
+    background-color: #ededed;
+    border-color: #d4d4d4;
+    color: #1a1a1a;
+  }
+`;
