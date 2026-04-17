@@ -94,6 +94,7 @@ function GameInner() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const gameStartTimeRef = useRef<number>(0);
   const lastHandledIdxRef = useRef(-1);
+  const lastLineAdvanceAtRef = useRef(0);
 
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [currentMs, setCurrentMs] = useState(0);
@@ -347,6 +348,7 @@ function GameInner() {
     if (timeBasedLineIdx < 0) return;
     if (timeBasedLineIdx <= lastHandledIdxRef.current) return;
     lastHandledIdxRef.current = timeBasedLineIdx;
+    lastLineAdvanceAtRef.current = performance.now();
     dispatch({
       type: "ADVANCE",
       newIdx: timeBasedLineIdx,
@@ -474,6 +476,7 @@ function GameInner() {
           setComboAnimKey((k) => k + 1);
         }
       } else {
+        if (performance.now() - lastLineAdvanceAtRef.current < 100) return;
         dispatch({ type: "WRONG" });
         setWrongChar(true);
         setTimeout(() => setWrongChar(false), 320);
@@ -497,15 +500,6 @@ function GameInner() {
   return (
     <GameRoot>
       <ToastContainer theme="dark" />
-      {isVideo && (
-        <BackgroundVideo
-          ref={videoRef}
-          src={audioUrl || undefined}
-          preload="auto"
-          playsInline
-          style={{ opacity: backgroundOpacity / 100 }}
-        />
-      )}
       {!isVideo && (
         <audio ref={audioRef} src={audioUrl || undefined} preload="auto" />
       )}
@@ -686,13 +680,26 @@ function GameInner() {
         </HUD>
 
         <GameArea>
+          {isVideo && (
+            <BackgroundVideo
+              ref={videoRef}
+              src={audioUrl || undefined}
+              preload="auto"
+              playsInline
+              style={{ opacity: backgroundOpacity / 100 }}
+            />
+          )}
           {phase === "playing" &&
             g.displayedLineIdx < 0 &&
             gameLines.length > 0 && (
               <>
                 <UpcomingWrap>
                   <UpcomingLabel>Next</UpcomingLabel>
-                  <UpcomingText>{gameLines[0]?.content ?? ""}</UpcomingText>
+                  <UpcomingText>
+                    {gameLines[0] && gameLines[0].content.trim() === ""
+                      ? "[INTERMISSION]"
+                      : gameLines[0]?.content ?? ""}
+                  </UpcomingText>
                 </UpcomingWrap>
                 <CurrentWrap style={{ position: "relative" }}>
                   <LineTimingRow>
@@ -716,7 +723,10 @@ function GameInner() {
               <UpcomingWrap>
                 <UpcomingLabel>Next</UpcomingLabel>
                 <UpcomingText>
-                  {gameLines[g.displayedLineIdx + 1]?.content ?? ""}
+                  {gameLines[g.displayedLineIdx + 1] &&
+                  gameLines[g.displayedLineIdx + 1].content.trim() === ""
+                    ? "[INTERMISSION]"
+                    : gameLines[g.displayedLineIdx + 1]?.content ?? ""}
                 </UpcomingText>
               </UpcomingWrap>
               <CurrentWrap style={{ position: "relative" }}>
@@ -727,93 +737,100 @@ function GameInner() {
                       {Math.max(0, lineRemainingMs / 1000).toFixed(1)}s
                     </LineTimingValue>
                   </LineTimingMeta>
-                  <LineTimingMeta>
-                    Estimated CPS:{" "}
-                    <LineTimingValue>
-                      {calculateCPSNeeded(
-                        gameLines[g.displayedLineIdx].content,
-                        currentLineTime / 1000
-                      ).toFixed(1)}
-                    </LineTimingValue>
-                  </LineTimingMeta>
+                  {gameLines[g.displayedLineIdx].content.trim() !== "" && (
+                    <LineTimingMeta>
+                      Estimated CPS:{" "}
+                      <LineTimingValue>
+                        {calculateCPSNeeded(
+                          gameLines[g.displayedLineIdx].content,
+                          currentLineTime / 1000
+                        ).toFixed(1)}
+                      </LineTimingValue>
+                    </LineTimingMeta>
+                  )}
                 </LineTimingRow>
                 <LineTimingBar>
                   <LineTimingFill $pct={lineTimingPct} />
                 </LineTimingBar>
                 <CharRow ref={charRowRef}>
-                  {(() => {
-                    const rawText = gameLines[g.displayedLineIdx].content;
-                    const text = rawText.toLowerCase();
-                    const tokens = text.split(/(\s+)/).filter(Boolean);
-                    let renderIndex = 0;
-                    return tokens.flatMap((token, tokenIdx) => {
-                      if (/^\s+$/.test(token)) {
-                        return token.split("").map((ch, spaceIdx) => {
+                  {gameLines[g.displayedLineIdx].content.trim() !== "" &&
+                    (() => {
+                      const rawText = gameLines[g.displayedLineIdx].content;
+                      const text = rawText.toLowerCase();
+                      const tokens = text.split(/(\s+)/).filter(Boolean);
+                      let renderIndex = 0;
+                      return tokens.flatMap((token, tokenIdx) => {
+                        if (/^\s+$/.test(token)) {
+                          return token.split("").map((ch, spaceIdx) => {
+                            let state: "typed" | "active" | "pending" | "wrong";
+                            if (renderIndex < g.typedCount) state = "typed";
+                            else if (renderIndex === g.typedCount)
+                              state = wrongChar ? "wrong" : "active";
+                            else state = "pending";
+                            const charIndex = renderIndex;
+                            const showIndicator =
+                              ch === " " &&
+                              wrapSpaceIndicators[charIndex] &&
+                              state !== "typed";
+                            const displayChar =
+                              ch === " "
+                                ? showIndicator
+                                  ? "␣"
+                                  : "\u00A0"
+                                : ch;
+                            const element = (
+                              <CharBox
+                                key={`space-${tokenIdx}-${spaceIdx}`}
+                                $state={state}
+                                ref={(el) => {
+                                  charRefs.current[charIndex] = el;
+                                }}
+                              >
+                                {displayChar}
+                              </CharBox>
+                            );
+                            renderIndex += 1;
+                            return element;
+                          });
+                        }
+
+                        const wordChars = token.split("").map((ch, charIdx) => {
                           let state: "typed" | "active" | "pending" | "wrong";
                           if (renderIndex < g.typedCount) state = "typed";
                           else if (renderIndex === g.typedCount)
                             state = wrongChar ? "wrong" : "active";
                           else state = "pending";
                           const charIndex = renderIndex;
-                          const showIndicator =
-                            ch === " " &&
-                            wrapSpaceIndicators[charIndex] &&
-                            state !== "typed";
-                          const displayChar =
-                            ch === " "
-                              ? showIndicator
-                                ? "␣"
-                                : "\u00A0"
-                              : ch;
                           const element = (
                             <CharBox
-                              key={`space-${tokenIdx}-${spaceIdx}`}
+                              key={`char-${tokenIdx}-${charIdx}`}
                               $state={state}
                               ref={(el) => {
                                 charRefs.current[charIndex] = el;
                               }}
                             >
-                              {displayChar}
+                              {ch}
                             </CharBox>
                           );
                           renderIndex += 1;
                           return element;
                         });
-                      }
 
-                      const wordChars = token.split("").map((ch, charIdx) => {
-                        let state: "typed" | "active" | "pending" | "wrong";
-                        if (renderIndex < g.typedCount) state = "typed";
-                        else if (renderIndex === g.typedCount)
-                          state = wrongChar ? "wrong" : "active";
-                        else state = "pending";
-                        const charIndex = renderIndex;
-                        const element = (
-                          <CharBox
-                            key={`char-${tokenIdx}-${charIdx}`}
-                            $state={state}
-                            ref={(el) => {
-                              charRefs.current[charIndex] = el;
-                            }}
-                          >
-                            {ch}
-                          </CharBox>
+                        return (
+                          <WordWrap key={`word-${tokenIdx}`}>
+                            {wordChars}
+                          </WordWrap>
                         );
-                        renderIndex += 1;
-                        return element;
                       });
-
-                      return (
-                        <WordWrap key={`word-${tokenIdx}`}>
-                          {wordChars}
-                        </WordWrap>
-                      );
-                    });
-                  })()}
+                    })()}
                 </CharRow>
                 {clearShowing && <ClearToast>CLEAR!</ClearToast>}
                 <CompletedLineFade>
-                  {g.lineCompleted ? "Cleared - waiting for next line..." : gameLines[g.displayedLineIdx].content}
+                  {gameLines[g.displayedLineIdx].content.trim() === ""
+                    ? "[INTERMISSION]"
+                    : g.lineCompleted
+                      ? "Cleared - waiting for next line..."
+                      : gameLines[g.displayedLineIdx].content}
                 </CompletedLineFade>
               </CurrentWrap>
             </>
