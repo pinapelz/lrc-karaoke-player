@@ -122,19 +122,18 @@ function GameInner() {
   const [clearShowing, setClearShowing] = useState(false);
   const [comboAnimKey, setComboAnimKey] = useState(0);
   const [countdown, setCountdown] = useState(0);
-  const [backgroundOpacity, setBackgroundOpacity] = useState(0);
+  const [backgroundOpacity, setBackgroundOpacity] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const stored = localStorage.getItem(BACKGROUND_OPACITY_KEY);
+    if (stored === null) return 0;
+    const parsed = Number(stored);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.min(100, Math.max(0, parsed));
+  });
   const [skipBacking, setSkipBacking] = useState(false);
   const isVideo = useMemo(() => isVideoUrl(audioUrl), [audioUrl]);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(BACKGROUND_OPACITY_KEY);
-    if (stored === null) return;
-    const parsed = Number(stored);
-    if (Number.isFinite(parsed)) {
-      const clamped = Math.min(100, Math.max(0, parsed));
-      setBackgroundOpacity(clamped);
-    }
-  }, []);
+
 
   useEffect(() => {
     localStorage.setItem(BACKGROUND_OPACITY_KEY, String(backgroundOpacity));
