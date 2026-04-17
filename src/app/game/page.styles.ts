@@ -97,8 +97,10 @@ export const HUD = styled.div`
   justify-content: space-between;
   gap: 24px;
   padding: 10px 24px;
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(13, 13, 20, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
   z-index: 2;
 `;
@@ -134,6 +136,7 @@ export const ComboValue = styled(HudValue)<{ $animate: boolean }>`
 /* ----- MAIN GAME AREA ----- */
 
 export const GameArea = styled.div`
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -142,6 +145,11 @@ export const GameArea = styled.div`
   padding: 24px 32px;
   gap: 24px;
   overflow: hidden;
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
 export const UpcomingWrap = styled.div`

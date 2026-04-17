@@ -35,7 +35,6 @@ export function parseLrcLines(
       ? rawLine.slice(lastIndex).replace(/\([^)]*\)/g, "")
       : rawLine.slice(lastIndex)
     ).trim();
-    if (!content) continue;
 
     for (const ms of timestamps) {
       result.push({ millisecond: ms, content });
