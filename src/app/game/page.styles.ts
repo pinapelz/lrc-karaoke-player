@@ -186,11 +186,14 @@ export const LineTimingBar = styled.div`
   overflow: hidden;
 `;
 
-export const LineTimingFill = styled.div<{ $pct: number }>`
+export const LineTimingFill = styled.div.attrs<{ $pct: number }>((props) => ({
+  style: {
+    width: `${props.$pct}%`,
+  },
+}))<{ $pct: number }>`
   height: 100%;
   border-radius: 2px;
   background: #7c3aed;
-  width: ${({ $pct }) => $pct}%;
   transition: width 0.1s linear;
 `;
 
@@ -313,11 +316,14 @@ export const ProgressWrap = styled.div`
   cursor: pointer;
 `;
 
-export const ProgressFill = styled.div<{ $pct: number }>`
+export const ProgressFill = styled.div.attrs<{ $pct: number }>((props) => ({
+  style: {
+    width: `${props.$pct}%`,
+  },
+}))<{ $pct: number }>`
   height: 100%;
   background: #7c3aed;
   border-radius: 3px;
-  width: ${({ $pct }) => $pct}%;
   transition: width 0.3s linear;
 `;
 

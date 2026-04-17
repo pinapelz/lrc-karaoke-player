@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { MdLibraryMusic } from "react-icons/md";
 import { FaCopy, FaCheck, FaExternalLinkAlt } from "react-icons/fa";
 import { Root, Navbar, Logo, LogoIcon, NavLink } from "../styles/shared";
@@ -14,6 +14,7 @@ import {
   Divider,
   Row,
   GenerateButton,
+  ModeButton,
   OutputSection,
   OutputLabel,
   CodeBox,
@@ -108,13 +109,7 @@ export default function CreatePage() {
   };
 
   const playerPath = mode === "typing" ? "/typing" : "/player";
-  const shareUrl = useMemo(
-    () =>
-      code
-        ? `${typeof window !== "undefined" ? window.location.origin : ""}${playerPath}?code=${code}`
-        : "",
-    [code, playerPath]
-  );
+  const shareUrl = code ? `${playerPath}?code=${code}` : "";
 
   return (
     <Root>
@@ -136,32 +131,26 @@ export default function CreatePage() {
 
         <Form>
           <Row>
-            <GenerateButton
+            <ModeButton
+              $active={mode === "karaoke"}
               onClick={() => {
                 setMode("karaoke");
                 setCode(null);
                 resetCopyStates();
               }}
-              style={{
-                backgroundColor: mode === "karaoke" ? "#1a1a1a" : "#e5e5e5",
-                color: mode === "karaoke" ? "#fff" : "#1a1a1a",
-              }}
             >
               MoekyunKaraoke
-            </GenerateButton>
-            <GenerateButton
+            </ModeButton>
+            <ModeButton
+              $active={mode === "typing"}
               onClick={() => {
                 setMode("typing");
                 setCode(null);
                 resetCopyStates();
               }}
-              style={{
-                backgroundColor: mode === "typing" ? "#1a1a1a" : "#e5e5e5",
-                color: mode === "typing" ? "#fff" : "#1a1a1a",
-              }}
             >
               LRC-Type
-            </GenerateButton>
+            </ModeButton>
           </Row>
 
           <Divider />

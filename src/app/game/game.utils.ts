@@ -27,7 +27,10 @@ export function parseLrcLines(lrcText: string): GameLine[] {
 
     if (timestamps.length === 0) continue;
 
-    const content = rawLine.slice(lastIndex).trim();
+    const content = rawLine
+      .slice(lastIndex)
+      .replace(/\([^)]*\)/g, "")
+      .trim();
     if (!content) continue;
 
     for (const ms of timestamps) {

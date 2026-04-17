@@ -85,6 +85,19 @@ export const GenerateButton = styled.button`
   }
 `;
 
+export const ModeButton = styled.button<{ $active: boolean }>`
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: ${(p) => (p.$active ? "#1a1a1a" : "#e5e5e5")};
+  color: ${(p) => (p.$active ? "#fff" : "#1a1a1a")};
+  transition: background-color 0.15s;
+`;
+
 export const OutputSection = styled.div`
   margin-top: 32px;
   display: flex;
