@@ -507,6 +507,15 @@ function GameInner() {
       {!isVideo && (
         <audio ref={audioRef} src={audioUrl || undefined} preload="auto" />
       )}
+      {isVideo && (
+        <BackgroundVideo
+          ref={videoRef}
+          src={audioUrl || undefined}
+          preload="auto"
+          playsInline
+          style={{ opacity: backgroundOpacity / 100 }}
+        />
+      )}
       <GameNavbar style={{ justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Link
@@ -684,15 +693,6 @@ function GameInner() {
         </HUD>
 
         <GameArea>
-          {isVideo && (
-            <BackgroundVideo
-              ref={videoRef}
-              src={audioUrl || undefined}
-              preload="auto"
-              playsInline
-              style={{ opacity: backgroundOpacity / 100 }}
-            />
-          )}
           {phase === "playing" &&
             g.displayedLineIdx < 0 &&
             gameLines.length > 0 && (
