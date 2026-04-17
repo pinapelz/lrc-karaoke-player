@@ -447,17 +447,6 @@ function GameInner() {
   useEffect(() => {
     if (phase !== "playing") return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        const audio = audioRef.current;
-        if (!audio) return;
-        e.preventDefault();
-        const direction = e.key === "ArrowRight" ? 1 : -1;
-        const seekSeconds = 5;
-        const target = audio.currentTime + direction * seekSeconds;
-        const duration = Number.isFinite(audio.duration) ? audio.duration : target;
-        audio.currentTime = Math.min(Math.max(0, target), duration);
-        return;
-      }
       if (e.key.length === 1) {
         e.preventDefault();
         handleKeyPress(e.key);
