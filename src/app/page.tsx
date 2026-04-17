@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FaPlay, FaMusic, FaSearch, FaUserCircle, FaKeyboard } from "react-icons/fa";
+import { FaPlay, FaMusic, FaSearch, FaKeyboard } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
 import { Root, Navbar, Logo, LogoIcon, NavLink, NavCtaLink } from "./styles/shared";
 import {
@@ -10,7 +10,6 @@ import {
   SearchInput,
   SearchButton,
   NavRight,
-  Avatar,
   ChipsBar,
   Chip,
   GridContainer,
@@ -112,9 +111,7 @@ export default function HomePage() {
         <NavRight>
           <NavCtaLink href="/typing">LRC-Type</NavCtaLink>
           <NavCtaLink href="/create">Create</NavCtaLink>
-          <Avatar>
-            <FaUserCircle />
-          </Avatar>
+
         </NavRight>
       </Navbar>
 

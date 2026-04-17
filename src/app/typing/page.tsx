@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaPlay, FaMusic, FaSearch, FaUserCircle } from "react-icons/fa";
+import { FaPlay, FaMusic, FaSearch } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
 import {
   Root,
@@ -14,7 +14,7 @@ import {
   SearchInput,
   SearchButton,
   NavRight,
-  Avatar,
+
   ChipsBar,
   Chip,
   GridContainer,
@@ -114,9 +114,7 @@ export default function TypingPage() {
         <NavRight>
           <NavCtaLink href="/">LRC-Karaoke</NavCtaLink>
           <NavCtaLink href="/create">Create</NavCtaLink>
-          <Avatar>
-            <FaUserCircle />
-          </Avatar>
+
         </NavRight>
       </Navbar>
 

@@ -658,7 +658,7 @@ function GameInner() {
               </StatsGrid>
               <ActionRow>
                 <PlayAgainBtn onClick={handleRestart}>Play Again</PlayAgainBtn>
-                <HomeBtn onClick={() => router.push("/")}>Home</HomeBtn>
+                <HomeBtn onClick={() => router.push("/typing")}>Home</HomeBtn>
               </ActionRow>
             </ResultsCard>
           </ResultsOverlay>

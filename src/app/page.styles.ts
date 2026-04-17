@@ -66,18 +66,7 @@ export const NavRight = styled.div`
   gap: 6px;
 `;
 
-export const Avatar = styled.div`
-  font-size: 28px;
-  color: #909090;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  &:hover {
-    color: #606060;
-  }
-`;
+
 
 export const ChipsBar = styled.div`
   display: flex;

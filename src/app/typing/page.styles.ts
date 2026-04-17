@@ -14,7 +14,6 @@ import {
   SearchInput as BaseSearchInput,
   SearchButton as BaseSearchButton,
   NavRight,
-  Avatar as BaseAvatar,
   ChipsBar as BaseChipsBar,
   Chip as BaseChip,
   GridContainer,
@@ -106,12 +105,7 @@ export const SearchButton = styled(BaseSearchButton)`
   }
 `;
 
-export const Avatar = styled(BaseAvatar)`
-  color: #9aa0ad;
-  &:hover {
-    color: #fff;
-  }
-`;
+
 
 export const ChipsBar = styled(BaseChipsBar)`
   background-color: #0f111a;
