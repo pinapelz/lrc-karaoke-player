@@ -1,4 +1,4 @@
-import styled, { keyframes, css } from "styled-components";
+import styled, { keyframes, css, createGlobalStyle } from "styled-components";
 
 /* ----- ANIMATIONS ----- */
 
@@ -38,6 +38,14 @@ export const glowAnim = keyframes`
   0%   { box-shadow: 0 0 4px 0px rgba(124, 58, 237, 0.4); }
   50%  { box-shadow: 0 0 16px 4px rgba(124, 58, 237, 0.8); }
   100% { box-shadow: 0 0 4px 0px rgba(124, 58, 237, 0.4); }
+`;
+
+export const GameGlobalStyle = createGlobalStyle`
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
 `;
 
 /* ----- LAYOUT ----- */

@@ -17,6 +17,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   GameRoot,
+  GameGlobalStyle,
   GameNavbar,
   GameContent,
   HUD,
@@ -89,6 +90,10 @@ const BACKGROUND_OPACITY_KEY = "lrcType.backgroundOpacity";
 function GameInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -860,25 +865,28 @@ function GameInner() {
 
 export default function GamePage() {
   return (
-    <Suspense
-      fallback={
-        <GameRoot>
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              color: "rgba(255,255,255,0.5)",
-            }}
-          >
-            Loading...
-          </div>
-        </GameRoot>
-      }
-    >
-      <GameInner />
-    </Suspense>
+    <>
+      <GameGlobalStyle />
+      <Suspense
+        fallback={
+          <GameRoot>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 18,
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              Loading...
+            </div>
+          </GameRoot>
+        }
+      >
+        <GameInner />
+      </Suspense>
+    </>
   );
 }
