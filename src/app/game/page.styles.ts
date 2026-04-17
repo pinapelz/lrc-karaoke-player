@@ -219,13 +219,15 @@ export const LineTimingBar = styled.div`
 
 export const LineTimingFill = styled.div.attrs<{ $pct: number }>((props) => ({
   style: {
-    width: `${props.$pct}%`,
+    transform: `scaleX(${props.$pct / 100})`,
   },
 }))<{ $pct: number }>`
   height: 100%;
+  width: 100%;
   border-radius: 2px;
   background: #7c3aed;
-  transition: width 0.1s linear;
+  transform-origin: left;
+  will-change: transform;
 `;
 
 export const CharRow = styled.div`
