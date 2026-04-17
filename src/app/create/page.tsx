@@ -40,13 +40,11 @@ interface TypingPayload {
   title?: string;
   artist?: string;
   skip_backing?: boolean;
-  difficulty?: number;
 }
 
 export default function CreatePage() {
   const [mode, setMode] = useState<CreateMode>("karaoke");
 
-  // Karaoke fields
   const [lrc, setLrc] = useState("");
   const [srv3, setSrv3] = useState("");
   const [file1, setFile1] = useState("");
@@ -54,10 +52,8 @@ export default function CreatePage() {
   const [offset, setOffset] = useState("");
   const [offset2, setOffset2] = useState("");
 
-  // Typing fields
   const [typingTitle, setTypingTitle] = useState("");
   const [typingArtist, setTypingArtist] = useState("");
-  const [typingDifficulty, setTypingDifficulty] = useState("");
   const [skipBacking, setSkipBacking] = useState(true);
 
   const [code, setCode] = useState<string | null>(null);
@@ -91,7 +87,6 @@ export default function CreatePage() {
     if (typingTitle.trim()) payload.title = typingTitle.trim();
     if (typingArtist.trim()) payload.artist = typingArtist.trim();
     payload.skip_backing = skipBacking;
-    if (typingDifficulty.trim() !== "") payload.difficulty = Number(typingDifficulty);
 
     setCode(btoa(JSON.stringify(payload)));
     resetCopyStates();
@@ -156,7 +151,7 @@ export default function CreatePage() {
           <Divider />
 
           <FieldGroup>
-            <Label>Media - The main audio that plays</Label>
+            <Label>Primary Media</Label>
             <Input
               type="url"
               placeholder="https://example.com/song.mp4"
@@ -261,18 +256,6 @@ export default function CreatePage() {
                     checked={skipBacking}
                     onChange={(e) => setSkipBacking(e.target.checked)}
                     style={{ width: "18px", height: "18px", marginTop: "10px" }}
-                  />
-                </FieldGroup>
-
-                <FieldGroup>
-                  <Label>Difficulty (number)</Label>
-                  <Input
-                    type="number"
-                    placeholder="1"
-                    min="1"
-                    step="1"
-                    value={typingDifficulty}
-                    onChange={(e) => setTypingDifficulty(e.target.value)}
                   />
                 </FieldGroup>
               </Row>
