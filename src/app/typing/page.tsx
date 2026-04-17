@@ -1,9 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
-import { FaPlay, FaMusic, FaSearch, FaUserCircle, FaKeyboard } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaPlay, FaMusic, FaSearch, FaUserCircle } from "react-icons/fa";
 import { MdLibraryMusic } from "react-icons/md";
-import { Root, Navbar, Logo, LogoIcon, NavLink, NavCtaLink } from "./styles/shared";
 import {
+  Root,
+  Navbar,
+  Logo,
+  LogoIcon,
+  NavCtaLink,
   NavLeft,
   NavCenter,
   SearchBox,
@@ -20,8 +24,6 @@ import {
   Thumbnail,
   PlayOverlay,
   PlayCircle,
-  BadgeRow,
-  Badge,
   CardMeta,
   CardInfo,
   CardTitle,
@@ -31,32 +33,31 @@ import {
   SectionHeading,
   OpenPlayerLink,
   PlayerDescription,
+  TypingGlobalStyle,
 } from "./page.styles";
 
-interface KaraokeEntry {
+interface TypingEntry {
   title: string;
   artist: string;
   thumbnail: string;
-  has_srv: boolean;
-  has_instrumental: boolean;
   code: string;
 }
 
-type KaraokeData = Record<string, KaraokeEntry[]>;
+type TypingData = Record<string, TypingEntry[]>;
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export default function HomePage() {
-  const [data, setData] = useState<KaraokeData>({});
+export default function TypingPage() {
+  const [data, setData] = useState<TypingData>({});
   const [activeChip, setActiveChip] = useState("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/karaoke.json")
+    fetch("/typing.json")
       .then((r) => r.json())
-      .then((json: KaraokeData) => setData(json))
+      .then((json: TypingData) => setData(json))
       .catch(() => {});
   }, []);
 
@@ -69,9 +70,8 @@ export default function HomePage() {
     })),
   ];
 
-  const visibleItems: KaraokeEntry[] = activeChip === "all"
-    ? Object.values(data).flat()
-    : data[activeChip] ?? [];
+  const visibleItems: TypingEntry[] =
+    activeChip === "all" ? Object.values(data).flat() : data[activeChip] ?? [];
 
   const normalizedSearch = search.trim().toLowerCase();
   const searchableItems = normalizedSearch ? Object.values(data).flat() : visibleItems;
@@ -85,21 +85,23 @@ export default function HomePage() {
     : searchableItems;
 
   return (
-    <Root>
+    <>
+      <TypingGlobalStyle />
+      <Root>
       <Navbar>
         <NavLeft>
           <Logo href="/">
             <LogoIcon>
               <MdLibraryMusic />
             </LogoIcon>
-            LRC-Karaoke
+            LRC-Type
           </Logo>
         </NavLeft>
 
         <NavCenter>
           <SearchBox>
             <SearchInput
-              placeholder="Search songs..."
+              placeholder="Search typing charts..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -110,7 +112,7 @@ export default function HomePage() {
         </NavCenter>
 
         <NavRight>
-          <NavCtaLink href="/typing">LRC-Type</NavCtaLink>
+          <NavCtaLink href="/">LRC-Karaoke</NavCtaLink>
           <NavCtaLink href="/create">Create</NavCtaLink>
           <Avatar>
             <FaUserCircle />
@@ -136,7 +138,7 @@ export default function HomePage() {
             <EmptyState>No results found.</EmptyState>
           ) : (
             filtered.map((item) => (
-              <Card key={item.code} href={`/player?code=${item.code}`}>
+              <Card key={item.code} href={`/game?code=${item.code}`}>
                 <ThumbnailWrapper>
                   {item.thumbnail ? (
                     <Thumbnail src={item.thumbnail} alt={item.title} />
@@ -148,12 +150,6 @@ export default function HomePage() {
                       <FaPlay />
                     </PlayCircle>
                   </PlayOverlay>
-                  {(item.has_srv || item.has_instrumental) && (
-                    <BadgeRow>
-                      {item.has_srv && <Badge $color="#7c3aed">SRV</Badge>}
-                      {item.has_instrumental && <Badge $color="#0369a1">Inst. Track</Badge>}
-                    </BadgeRow>
-                  )}
                 </ThumbnailWrapper>
                 <CardMeta>
                   <CardInfo>
@@ -166,16 +162,7 @@ export default function HomePage() {
           )}
         </CardGrid>
       </GridContainer>
-
-      <CtaSection>
-        <SectionHeading>Custom Player</SectionHeading>
-        <OpenPlayerLink href="/player">
-          <FaPlay /> Open Player
-        </OpenPlayerLink>
-        <PlayerDescription>
-          Load your own video, audio, LRC lyrics
-        </PlayerDescription>
-      </CtaSection>
-    </Root>
+      </Root>
+    </>
   );
 }
