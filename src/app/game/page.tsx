@@ -39,6 +39,11 @@ import {
   CharBox,
   ClearToast,
   GetReadyText,
+  BackgroundVideo,
+  OpacityControl,
+  OpacityLabel,
+  OpacitySlider,
+  OpacityValue,
   CompletedLineFade,
   GameFooter,
   ControlBtn,
@@ -72,11 +77,21 @@ import { formatTime, parseLrcLines, calculateCPSNeeded } from "./game.utils";
 
 type GamePhase = "idle" | "countdown" | "playing" | "paused" | "finished";
 
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "m4v", "ogv"]);
+const isVideoUrl = (url: string) => {
+  if (!url) return false;
+  const cleaned = url.split("?")[0].split("#")[0];
+  const ext = cleaned.split(".").pop()?.toLowerCase();
+  return !!ext && VIDEO_EXTENSIONS.has(ext);
+};
+const BACKGROUND_OPACITY_KEY = "lrcType.backgroundOpacity";
+
 function GameInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const gameStartTimeRef = useRef<number>(0);
   const lastHandledIdxRef = useRef(-1);
 
@@ -101,7 +116,24 @@ function GameInner() {
   const [clearShowing, setClearShowing] = useState(false);
   const [comboAnimKey, setComboAnimKey] = useState(0);
   const [countdown, setCountdown] = useState(0);
+  const [backgroundOpacity, setBackgroundOpacity] = useState(0);
   const [skipBacking, setSkipBacking] = useState(false);
+  const isVideo = useMemo(() => isVideoUrl(audioUrl), [audioUrl]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(BACKGROUND_OPACITY_KEY);
+    if (stored === null) return;
+    const parsed = Number(stored);
+    if (Number.isFinite(parsed)) {
+      const clamped = Math.min(100, Math.max(0, parsed));
+      setBackgroundOpacity(clamped);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(BACKGROUND_OPACITY_KEY, String(backgroundOpacity));
+  }, [backgroundOpacity]);
+
   const charRowRef = useRef<HTMLDivElement | null>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [wrapSpaceIndicators, setWrapSpaceIndicators] = useState<boolean[]>([]);
@@ -270,31 +302,34 @@ function GameInner() {
   }, [phase]);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (!media) return;
     const onTimeUpdate = () => {
-      setCurrentMs(audio.currentTime * 1000 + offsetRef.current);
-      if (audio.duration && !isNaN(audio.duration)) {
-        setDuration(audio.duration * 1000);
-        setProgressPct((audio.currentTime / audio.duration) * 100);
+      setCurrentMs(media.currentTime * 1000 + offsetRef.current);
+      if (media.duration && !isNaN(media.duration)) {
+        setDuration(media.duration * 1000);
+        setProgressPct((media.currentTime / media.duration) * 100);
       }
     };
     const onLoadedMetadata = () => {
-      if (!isNaN(audio.duration)) setDuration(audio.duration * 1000);
+      if (!isNaN(media.duration)) {
+        setDuration(media.duration * 1000);
+        setGameDurationMs(media.duration * 1000);
+      }
     };
     const onEnded = () => {
       setPhase("finished");
       setGameDurationMs(Date.now() - gameStartTimeRef.current);
     };
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEnded);
+    media.addEventListener("timeupdate", onTimeUpdate);
+    media.addEventListener("loadedmetadata", onLoadedMetadata);
+    media.addEventListener("ended", onEnded);
     return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEnded);
+      media.removeEventListener("timeupdate", onTimeUpdate);
+      media.removeEventListener("loadedmetadata", onLoadedMetadata);
+      media.removeEventListener("ended", onEnded);
     };
-  }, []); // intentionally empty deps
+  }, [isVideo, audioUrl]);
 
   useEffect(() => {
     if (phaseRef.current !== "playing") return;
@@ -341,16 +376,16 @@ function GameInner() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio || !lrcContent || !audioUrl) return;
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (!media || !lrcContent || !audioUrl) return;
     if (countdownIntervalRef.current !== null) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
     dispatch({ type: "RESET" });
     lastHandledIdxRef.current = -1;
-    audio.pause();
-    audio.currentTime = 0;
+    media.pause();
+    media.currentTime = 0;
     setPhase("countdown");
     setCountdown(5);
     setGameDurationMs(0);
@@ -358,8 +393,8 @@ function GameInner() {
     setCurrentMs(0);
 
     const beginPlayback = () => {
-      audio.currentTime = 0;
-      audio.play();
+      media.currentTime = 0;
+      media.play();
       setPhase("playing");
       gameStartTimeRef.current = Date.now();
       if (gameLines[0]) {
@@ -385,13 +420,13 @@ function GameInner() {
         return c - 1;
       });
     }, 1000);
-  }, [lrcContent, audioUrl, gameLines]);
+  }, [lrcContent, audioUrl, gameLines, isVideo]);
 
   const handleRestart = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (media) {
+      media.pause();
+      media.currentTime = 0;
     }
     if (countdownIntervalRef.current !== null) {
       clearInterval(countdownIntervalRef.current);
@@ -403,7 +438,7 @@ function GameInner() {
     setPhase("idle");
     setCurrentMs(0);
     setProgressPct(0);
-  }, []);
+  }, [isVideo]);
 
   const handleLoadCode = useCallback(() => {
     if (!codeInput.trim()) return;
@@ -459,7 +494,18 @@ function GameInner() {
   return (
     <GameRoot>
       <ToastContainer theme="dark" />
-      <audio ref={audioRef} src={audioUrl || undefined} preload="auto" />
+      {isVideo && (
+        <BackgroundVideo
+          ref={videoRef}
+          src={audioUrl || undefined}
+          preload="auto"
+          playsInline
+          style={{ opacity: backgroundOpacity / 100 }}
+        />
+      )}
+      {!isVideo && (
+        <audio ref={audioRef} src={audioUrl || undefined} preload="auto" />
+      )}
       <GameNavbar style={{ justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Link
@@ -516,6 +562,24 @@ function GameInner() {
                   </SongTitleText>
                   <SongArtistText>{songArtist}</SongArtistText>
                 </>
+              )}
+
+              {isVideo && (
+                <OpacityControl>
+                  <OpacityLabel>
+                    Background opacity
+                    <OpacityValue>{backgroundOpacity}%</OpacityValue>
+                  </OpacityLabel>
+                  <OpacitySlider
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={backgroundOpacity}
+                    onChange={(e) =>
+                      setBackgroundOpacity(Number(e.target.value))
+                    }
+                  />
+                </OpacityControl>
               )}
 
               <StartBtn

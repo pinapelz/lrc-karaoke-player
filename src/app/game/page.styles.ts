@@ -51,6 +51,17 @@ export const GameRoot = styled.div`
   color: #ffffff;
   font-family: "Roboto", "Segoe UI", Arial, sans-serif;
   overflow: hidden;
+  z-index: 0;
+`;
+
+export const BackgroundVideo = styled.video`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 0;
 `;
 
 export const GameNavbar = styled.nav`
@@ -73,6 +84,8 @@ export const GameContent = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 `;
 
 /* ----- HUD ----- */
@@ -86,6 +99,8 @@ export const HUD = styled.div`
   padding: 10px 24px;
   background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 2;
 `;
 
 export const HudStat = styled.div`
@@ -293,6 +308,8 @@ export const GameFooter = styled.footer`
   padding: 12px 24px;
   background: rgba(255, 255, 255, 0.04);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 2;
 `;
 
 export const ControlBtn = styled.button`
@@ -364,6 +381,32 @@ export const StartCard = styled.div`
   max-width: 520px;
   width: 100%;
   text-align: center;
+`;
+
+export const OpacityControl = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+`;
+
+export const OpacityLabel = styled.div`
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const OpacityValue = styled.span`
+  font-variant-numeric: tabular-nums;
+`;
+
+export const OpacitySlider = styled.input`
+  width: 100%;
 `;
 
 export const CountdownNumber = styled.div`
