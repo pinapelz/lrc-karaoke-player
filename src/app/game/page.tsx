@@ -492,6 +492,24 @@ function GameInner() {
   useEffect(() => {
     if (phase !== "playing") return;
     const handler = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        const idx = gRef.current.displayedLineIdx;
+        if (idx < 0 && gameLines.length > 0) {
+          const firstMs = gameLines[0]?.millisecond ?? 0;
+          const media = isVideo ? videoRef.current : audioRef.current;
+          if (media) {
+            const currentMsLocal = media.currentTime * 1000 + offsetRef.current;
+            const intermissionRemaining = Math.max(0, firstMs - Math.max(0, currentMsLocal));
+            if (intermissionRemaining > 5000) {
+              e.preventDefault();
+              const targetMs = Math.max(0, firstMs - 3000);
+              media.currentTime = Math.max(0, (targetMs - offsetRef.current) / 1000);
+              setCurrentMs(media.currentTime * 1000 + offsetRef.current);
+              return;
+            }
+          }
+        }
+      }
       if (e.key.length === 1) {
         e.preventDefault();
         handleKeyPress(e.key);
@@ -499,7 +517,7 @@ function GameInner() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [phase, handleKeyPress]);
+  }, [phase, handleKeyPress, gameLines, isVideo]);
 
   return (
     <GameRoot>
@@ -714,6 +732,16 @@ function GameInner() {
                       </LineTimingValue>
                     </LineTimingMeta>
                   </LineTimingRow>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.6)",
+                      marginTop: 8,
+                      textAlign: "center",
+                    }}
+                  >
+                    {intermissionData.remainingMs > 5000 && "Press Space to skip long intermissions"}
+                  </div>
                   <LineTimingBar>
                     <LineTimingFill $pct={intermissionData.pct} />
                   </LineTimingBar>
