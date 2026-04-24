@@ -264,14 +264,17 @@ function GameInner() {
 
   const intermissionData = useMemo(() => {
     const firstMs = gameLines[0]?.millisecond ?? 0;
-    if (firstMs <= 0) {
-      return { pct: 100, remainingMs: 0 };
+    const firstMediaMs = firstMs - offsetRef.current;
+    const remainingMs = Math.max(0, firstMs - currentMs);
+    if (!gameLines.length || firstMediaMs <= 0) {
+      return { pct: remainingMs === 0 ? 100 : 0, remainingMs };
     }
-    const clampedCurrent = Math.max(0, currentMs);
-    const remainingMs = Math.max(0, firstMs - clampedCurrent);
-    const pct = Math.min(100, Math.max(0, (clampedCurrent / firstMs) * 100));
+
+    const mediaCurrentMs = currentMs - offsetRef.current;
+    const pct = Math.min(100, Math.max(0, (mediaCurrentMs / firstMediaMs) * 100));
+
     return { pct, remainingMs };
-  }, [gameLines, currentMs]);
+  }, [gameLines, currentMs, offset]);
 
   useEffect(() => {
     const idx = g.displayedLineIdx;
@@ -499,10 +502,10 @@ function GameInner() {
           const media = isVideo ? videoRef.current : audioRef.current;
           if (media) {
             const currentMsLocal = media.currentTime * 1000 + offsetRef.current;
-            const intermissionRemaining = Math.max(0, firstMs - Math.max(0, currentMsLocal));
+            const intermissionRemaining = Math.max(0, firstMs - currentMsLocal);
             if (intermissionRemaining > 5000) {
               e.preventDefault();
-              const targetMs = Math.max(0, firstMs - 3000);
+              const targetMs = firstMs - 3000;
               media.currentTime = Math.max(0, (targetMs - offsetRef.current) / 1000);
               setCurrentMs(media.currentTime * 1000 + offsetRef.current);
               return;
