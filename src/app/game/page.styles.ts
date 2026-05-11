@@ -427,6 +427,41 @@ export const OpacitySlider = styled.input`
   width: 100%;
 `;
 
+export const PreviewWrap = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const PreviewBtn = styled.button`
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+export const PreviewHint = styled.div`
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+`;
+
 export const CountdownNumber = styled.div`
   font-size: 72px;
   font-weight: 900;

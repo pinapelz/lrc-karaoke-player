@@ -45,6 +45,9 @@ import {
   OpacityLabel,
   OpacitySlider,
   OpacityValue,
+  PreviewWrap,
+  PreviewBtn,
+  PreviewHint,
   CompletedLineFade,
   GameFooter,
   ControlBtn,
@@ -86,6 +89,7 @@ const isVideoUrl = (url: string) => {
   return !!ext && VIDEO_EXTENSIONS.has(ext);
 };
 const BACKGROUND_OPACITY_KEY = "lrcType.backgroundOpacity";
+const AUDIO_VOLUME_KEY = "lrcType.audioVolume";
 
 function GameInner() {
   const searchParams = useSearchParams();
@@ -130,6 +134,15 @@ function GameInner() {
     if (!Number.isFinite(parsed)) return 0;
     return Math.min(100, Math.max(0, parsed));
   });
+  const [audioVolume, setAudioVolume] = useState(() => {
+    if (typeof window === "undefined") return 100;
+    const stored = localStorage.getItem(AUDIO_VOLUME_KEY);
+    if (stored === null) return 100;
+    const parsed = Number(stored);
+    if (!Number.isFinite(parsed)) return 100;
+    return Math.min(100, Math.max(0, parsed));
+  });
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const [skipBacking, setSkipBacking] = useState(false);
   const isVideo = useMemo(() => isVideoUrl(audioUrl), [audioUrl]);
 
@@ -138,6 +151,39 @@ function GameInner() {
   useEffect(() => {
     localStorage.setItem(BACKGROUND_OPACITY_KEY, String(backgroundOpacity));
   }, [backgroundOpacity]);
+
+  useEffect(() => {
+    localStorage.setItem(AUDIO_VOLUME_KEY, String(audioVolume));
+  }, [audioVolume]);
+
+  useEffect(() => {
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (!media) return;
+    media.volume = audioVolume / 100;
+  }, [audioVolume, isVideo, audioUrl]);
+
+  useEffect(() => {
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (!media) {
+      setIsPreviewPlaying(false);
+      return;
+    }
+    const handlePlay = () => setIsPreviewPlaying(true);
+    const handlePause = () => setIsPreviewPlaying(false);
+    const handleEnded = () => setIsPreviewPlaying(false);
+    media.addEventListener("play", handlePlay);
+    media.addEventListener("pause", handlePause);
+    media.addEventListener("ended", handleEnded);
+    return () => {
+      media.removeEventListener("play", handlePlay);
+      media.removeEventListener("pause", handlePause);
+      media.removeEventListener("ended", handleEnded);
+    };
+  }, [isVideo, audioUrl]);
+
+  useEffect(() => {
+    setIsPreviewPlaying(false);
+  }, [audioUrl]);
 
   const charRowRef = useRef<HTMLDivElement | null>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -337,8 +383,12 @@ function GameInner() {
       }
     };
     const onEnded = () => {
-      setPhase("finished");
-      setGameDurationMs(Date.now() - gameStartTimeRef.current);
+      if (phaseRef.current === "playing") {
+        setPhase("finished");
+        setGameDurationMs(Date.now() - gameStartTimeRef.current);
+        return;
+      }
+      setIsPreviewPlaying(false);
     };
     media.addEventListener("timeupdate", onTimeUpdate);
     media.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -395,6 +445,23 @@ function GameInner() {
     } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handlePreviewToggle = useCallback(() => {
+    if (phase !== "idle") return;
+    const media = isVideo ? videoRef.current : audioRef.current;
+    if (!media || !audioUrl) return;
+
+    if (media.paused) {
+      void media.play().catch(() => {
+        toast.error("Unable to start preview. Try interacting with the page again.", {
+          theme: "dark",
+        });
+      });
+      return;
+    }
+
+    media.pause();
+  }, [phase, isVideo, audioUrl]);
+
   const handleStart = useCallback(() => {
     const media = isVideo ? videoRef.current : audioRef.current;
     if (!media || !lrcContent || !audioUrl) return;
@@ -406,6 +473,7 @@ function GameInner() {
     lastHandledIdxRef.current = -1;
     media.pause();
     media.currentTime = 0;
+    setIsPreviewPlaying(false);
     setPhase("countdown");
     setCountdown(5);
     setGameDurationMs(0);
@@ -440,6 +508,7 @@ function GameInner() {
       media.pause();
       media.currentTime = 0;
     }
+    setIsPreviewPlaying(false);
     if (countdownIntervalRef.current !== null) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
@@ -595,6 +664,43 @@ function GameInner() {
                 </>
               )}
 
+              <StartBtn
+                onClick={handleStart}
+                disabled={!isReady}
+                suppressHydrationWarning
+              >
+                {loadingLrc ? "Loading song..." : "▶  Start Game"}
+              </StartBtn>
+
+              <OpacityControl>
+                <OpacityLabel>
+                  Volume
+                  <OpacityValue>{audioVolume}%</OpacityValue>
+                </OpacityLabel>
+                <OpacitySlider
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={audioVolume}
+                  onChange={(e) => setAudioVolume(Number(e.target.value))}
+                />
+              </OpacityControl>
+
+              <PreviewWrap>
+                <PreviewBtn
+                  onClick={handlePreviewToggle}
+                  disabled={!audioUrl}
+                  suppressHydrationWarning
+                >
+                  {isPreviewPlaying ? "⏸ Pause Preview" : "▶ Preview Audio"}
+                </PreviewBtn>
+                <PreviewHint>
+                  {audioUrl
+                    ? "Use preview to test your volume before starting."
+                    : "Load a chart to enable audio preview."}
+                </PreviewHint>
+              </PreviewWrap>
+
               {isVideo && (
                 <OpacityControl>
                   <OpacityLabel>
@@ -612,14 +718,6 @@ function GameInner() {
                   />
                 </OpacityControl>
               )}
-
-              <StartBtn
-                onClick={handleStart}
-                disabled={!isReady}
-                suppressHydrationWarning
-              >
-                {loadingLrc ? "Loading song..." : "▶  Start Game"}
-              </StartBtn>
               <CodeSection>
                 <div
                   style={{
